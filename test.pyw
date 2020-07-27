@@ -232,17 +232,17 @@ class Main(object):
         t.start()
         # time.sleep(1)
         print(t.is_alive())
-        # while t.is_alive():
-        try:
-            for line in self.process.stdout:
-                reg = re.search('\d\d:\d\d:\d\d', line)
-                x = reg.group(0) if reg else ''
-                self.loading.pack_forget()
-                self.loading = tk.Label(self.root, text=os.linesep * 2 + x)
-                self.loading.pack()
-                self.root.update()
-        except:
-            pass
+        while t.is_alive():
+            try:
+                for line in self.process.stdout:
+                    reg = re.search('\d\d:\d\d:\d\d', line)
+                    x = reg.group(0) if reg else ''
+                    self.loading.pack_forget()
+                    self.loading = tk.Label(self.root, text=os.linesep * 2 + x)
+                    self.loading.pack()
+                    self.root.update()
+            except:
+                pass
         os.startfile(directory)
         try:
             self.load_landing()
