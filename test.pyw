@@ -4,6 +4,7 @@ import time
 import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
+from tkinter import ttk
 from PIL import ImageTk, Image
 import requests
 import json
@@ -210,13 +211,14 @@ class Main(object):
     def start_axis(self, input, output):
         command = "ffmpeg -y -i \"" + str(
             input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
-        logging.critical('axis command: ' + command)
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                        universal_newlines=True, startupinfo=si)
-
-        # subprocess.call(command, startupinfo=si)
+        # logging.critical('axis command: ' + command)
+        # self.result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=si,
+        #                              shell=True)
+        # self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        #                                 universal_newlines=True, startupinfo=si, shell=True)
+        self.process = subprocess.call(command, startupinfo=si, shell=True)
 
     def axis(self):
         self.file_name = filedialog.askopenfilename(filetypes=(("mkv files", "*.mkv"), ("All files", "*.*")))
@@ -229,20 +231,37 @@ class Main(object):
 
         modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
         t = self.load_loading(modified_file_name)
+        # print('here')
         t.start()
         # time.sleep(1)
-        print(t.is_alive())
+
+        time.sleep(0.1)
         while t.is_alive():
             try:
-                for line in self.process.stdout:
-                    reg = re.search('\d\d:\d\d:\d\d', line)
-                    x = reg.group(0) if reg else ''
-                    self.loading.pack_forget()
-                    self.loading = tk.Label(self.root, text=os.linesep * 2 + x)
-                    self.loading.pack()
-                    self.root.update()
+                # for line in self.process.stdout:
+                #     print(line)
+                # reg = re.search('\d\d:\d\d:\d\d', self.result)
+                # x = reg.group(0) if reg else ''
+
+                # print(self.result)
+                # print(self.result.check_returncode())
+                # time.sleep(0.1)
+                # print(line for line in self.process.stdout)
+                # print(dir(self.process.stdout))
+                # print(self.process.stdout)
+                time.sleep(0.005)
+                percent = os.path.getsize(modified_file_name) / os.path.getsize(self.file_name) * 100
+                try:
+                    self.percent.pack_forget()
+                except:
+                    pass
+                self.percent = tk.Label(self.root, text=str(int(percent)) + '%')
+                self.percent.pack()
+                self.progress['value'] = percent
+                self.root.update()
             except:
                 pass
+        # t.join()
         os.startfile(directory)
         try:
             self.load_landing()
@@ -304,10 +323,12 @@ class Main(object):
         self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
         try:
             self.loading.pack_forget()
+            self.progress.pack_forget()
+            self.percent.pack_forget()
         except:
             pass
         self.config_menu()
-        self.loading = tk.Label(self.root, text=os.linesep * 2 + 'welcome!')
+        self.loading = tk.Label(self.root, text=os.linesep * 1 + 'welcome!')
         self.loading.pack()
         self.root.update()
 
@@ -324,8 +345,12 @@ class Main(object):
         except:
             pass
         self.root.config(menu="")
-        self.loading = tk.Label(self.root, text=os.linesep * 2 + 'wait for axis to finish ...')
+        # self.loading = tk.Label(self.root, text=os.linesep * 2 + 'wait for axis to finish ...')
+        self.loading = tk.Label(self.root, text=os.linesep * 1)
         self.loading.pack()
+        # self.loading.pack()
+        self.progress = ttk.Progressbar(self.root, orient=HORIZONTAL, length=150, mode='determinate')
+        self.progress.pack()
         self.root.update()
         return t
 
