@@ -2,13 +2,13 @@ import logging
 import subprocess
 import time
 import tkinter as tk
-from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 from PIL import ImageTk, Image
 import requests
 import json
 import os
+import re
 import threading
 
 
@@ -209,16 +209,13 @@ class Main(object):
         self.root.destroy()
 
     def start_axis(self, input, output):
-        command = "ffmpeg -y -i \"" + str(
+        command = "ffmpeg -y  -v quiet -stats -i \"" + str(
             input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        # logging.critical('axis command: ' + command)
-        # self.result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=si,
-        #                              shell=True)
-        # self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        #                                 universal_newlines=True, startupinfo=si, shell=True)
-        self.process = subprocess.call(command, startupinfo=si, shell=True)
+        logging.critical('axis command: ' + command)
+        self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        universal_newlines=True, startupinfo=si, shell=True)
 
     def axis(self):
         self.file_name = filedialog.askopenfilename(filetypes=(("mkv files", "*.mkv"), ("All files", "*.*")))
@@ -231,37 +228,18 @@ class Main(object):
 
         modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
         t = self.load_loading(modified_file_name)
-        # print('here')
         t.start()
-        # time.sleep(1)
 
-        time.sleep(0.1)
-        while t.is_alive():
+        for line in self.process.stdout:
+            reg = re.search('\d\d:\d\d:\d\d', line)
+            x = reg.group(0) if reg else ''
             try:
-                # for line in self.process.stdout:
-                #     print(line)
-                # reg = re.search('\d\d:\d\d:\d\d', self.result)
-                # x = reg.group(0) if reg else ''
-
-                # print(self.result)
-                # print(self.result.check_returncode())
-                # time.sleep(0.1)
-                # print(line for line in self.process.stdout)
-                # print(dir(self.process.stdout))
-                # print(self.process.stdout)
-                time.sleep(0.005)
-                percent = os.path.getsize(modified_file_name) / os.path.getsize(self.file_name) * 100
-                try:
-                    self.percent.pack_forget()
-                except:
-                    pass
-                self.percent = tk.Label(self.root, text=str(int(percent)) + '%')
-                self.percent.pack()
-                self.progress['value'] = percent
-                self.root.update()
+                self.percent.pack_forget()
             except:
                 pass
-        # t.join()
+            self.percent = tk.Label(self.root, text=x)
+            self.percent.pack()
+            self.root.update()
         os.startfile(directory)
         try:
             self.load_landing()
@@ -269,44 +247,44 @@ class Main(object):
             pass
 
     # TODO
-    # def start_convert(self, input, output):
-    #     command = "ffmpeg -y -i \"" + str(
-    #         input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
-    #     si = subprocess.STARTUPINFO()
-    #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    #     logging.critical('axis command: ' + command)
-    #     subprocess.call(command, startupinfo=si)
-    #     os.startfile(os.path.dirname(output))
+    def start_convert(self, input, output):
+        command = "ffmpeg -y  -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        logging.critical('axis command: ' + command)
+        self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        universal_newlines=True, startupinfo=si, shell=True)
 
     # TODO
-    # def convert(self):
-    #     command = 'ffmpeg -y -i "C:/Users/Erfan/Desktop/test/2020-07-23ArashAdabiyat-HosenKhani(5).mkv" -metadata title="@alaa_sanatisharif" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 "C:/Users/Erfan/Desktop/test/mp4/2020-07-23ArashAdabiyat-HosenKhani(5).mp4'
-    #     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    #     for line in process.stdout:
-    #         print(line)
-    #         print('-' * 50)
+    def convert(self):
+        self.file_name = filedialog.askopenfilename(filetypes=(("mkv files", "*.mkv"), ("All files", "*.*")))
+        if self.file_name == "":
+            return None
+        directory = os.path.join(os.path.dirname(self.file_name), 'mp4')
 
-    # self.file_name = filedialog.askopenfilename(filetypes=(("mp4 files", "*.mp4"), ("All files", "*.*")))
-    # if self.file_name == "":
-    #     return None
-    # directory = os.path.join(os.path.dirname(self.file_name), 'mp4')
-    #
-    # if not os.path.exists(directory):
-    #     os.makedirs(directory)
-    #
-    # modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
-    # t = self.load_loading(modified_file_name)
-    # t.start()
-    #
-    # while t.is_alive():
-    #     try:
-    #         self.root.update()
-    #     except:
-    #         pass
-    # try:
-    #     self.load_landing()
-    # except:
-    #     pass
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
+        t = self.load_loading(modified_file_name)
+        t.start()
+
+        for line in self.process.stdout:
+            reg = re.search('\d\d:\d\d:\d\d', line)
+            x = reg.group(0) if reg else ''
+            try:
+                self.percent.pack_forget()
+            except:
+                pass
+            self.percent = tk.Label(self.root, text=x)
+            self.percent.pack()
+            self.root.update()
+        os.startfile(directory)
+        try:
+            self.load_landing()
+        except:
+            pass
 
     def load_login(self):
         self.load_content_view()
@@ -323,7 +301,6 @@ class Main(object):
         self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
         try:
             self.loading.pack_forget()
-            self.progress.pack_forget()
             self.percent.pack_forget()
         except:
             pass
@@ -345,12 +322,10 @@ class Main(object):
         except:
             pass
         self.root.config(menu="")
-        # self.loading = tk.Label(self.root, text=os.linesep * 2 + 'wait for axis to finish ...')
         self.loading = tk.Label(self.root, text=os.linesep * 1)
         self.loading.pack()
-        # self.loading.pack()
-        self.progress = ttk.Progressbar(self.root, orient=HORIZONTAL, length=150, mode='determinate')
-        self.progress.pack()
+        # self.progress = ttk.Progressbar(self.root, orient=HORIZONTAL, length=150, mode='determinate')
+        # self.progress.pack()
         self.root.update()
         return t
 
@@ -364,8 +339,8 @@ class Main(object):
             self.x3.pack_forget()
         except:
             pass
-        self.mblbox = Entry(self.root)
-        self.pwdbox = Entry(self.root, show='*')
+        self.mblbox = tk.Entry(self.root)
+        self.pwdbox = tk.Entry(self.root, show='*')
 
         self.x1 = tk.Label(self.root, text='mobile')
         self.x1.pack(side='top')
@@ -377,7 +352,7 @@ class Main(object):
         self.pwdbox.pack(side='top')
         self.pwdbox.bind('<Return>', self.onpwdentry)
 
-        self.x3 = Button(self.root, command=self.onokclick, text='Login')
+        self.x3 = tk.Button(self.root, command=self.onokclick, text='Login')
         self.x3.pack(side='top')
 
     def init_window(self):
@@ -409,8 +384,6 @@ class Main(object):
 
 
 def setup_logging():
-    # while os.stat('log.txt').st_size > 300:
-    #     print(os.stat('log.txt').st_size)
     with open('log.txt', 'r+') as logfile:
         content = logfile.readlines()
         content = content[-1000:]
