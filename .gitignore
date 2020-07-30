@@ -3,4 +3,5 @@ __pycache__/
 venv/
 *.mp4
 *.mkv
+*.jpg
 log.txt
