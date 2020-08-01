@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import time
+import datetime
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
@@ -10,6 +11,7 @@ import json
 import os
 import re
 import threading
+from win10toast import ToastNotifier
 
 
 class Insert(object):
@@ -46,9 +48,9 @@ class Insert(object):
         self.browser6.pack()
 
     def load_contenttype(self):
-        self.type_var = StringVar(self.root)
+        self.type_var = tk.StringVar(self.root)
         self.type_var.set("فیلم")  # default value
-        self.x = OptionMenu(self.root, self.type_var, "فیلم", "جزوه")
+        self.x = tk.OptionMenu(self.root, self.type_var, "فیلم", "جزوه")
         self.x.config(state='disable')
         self.x.pack()
 
@@ -63,9 +65,9 @@ class Insert(object):
         self.browser3.pack()
 
     def load_payment(self):
-        self.check_value = IntVar()
+        self.check_value = tk.IntVar()
         self.check_value.set(1)
-        a = Checkbutton(self.root, text="رایگان", variable=self.check_value, state='disabled')
+        a = tk.Checkbutton(self.root, text="رایگان", variable=self.check_value, state='disabled')
         a.pack()
 
     def load_order(self):
@@ -211,11 +213,12 @@ class Main(object):
     def start_axis(self, input, output):
         command = "ffmpeg -y  -v quiet -stats -i \"" + str(
             input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         logging.critical('axis command: ' + command)
         self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                        universal_newlines=True, startupinfo=si, shell=True)
+                                        universal_newlines=True, shell=True)
+        for line in self.process.stdout:
+            reg = re.search('\d\d:\d\d:\d\d', line)
+            self.x = reg.group(0) if reg else ''
 
     def axis(self):
         self.file_name = filedialog.askopenfilename(filetypes=(("mkv files", "*.mkv"), ("All files", "*.*")))
@@ -228,16 +231,14 @@ class Main(object):
 
         modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
         t = self.load_loading(modified_file_name)
+        self.x = ''
         t.start()
-
-        for line in self.process.stdout:
-            reg = re.search('\d\d:\d\d:\d\d', line)
-            x = reg.group(0) if reg else ''
+        while t.is_alive():
             try:
                 self.percent.pack_forget()
             except:
                 pass
-            self.percent = tk.Label(self.root, text=x)
+            self.percent = tk.Label(self.root, text='مدت زمان تبدیل شده' + os.linesep + self.x)
             self.percent.pack()
             self.root.update()
         os.startfile(directory)
@@ -245,46 +246,96 @@ class Main(object):
             self.load_landing()
         except:
             pass
+        self.process.terminate()
+        del t
 
-    # TODO
-    def start_convert(self, input, output):
-        command = "ffmpeg -y  -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        logging.critical('axis command: ' + command)
-        self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                        universal_newlines=True, startupinfo=si, shell=True)
+        toaster = ToastNotifier()
+        toaster.show_toast("Axis Finished",
+                           self.file_name,
+                           icon_path='alaa.ico',
+                           duration=60*10,
+                           threaded=True)
+        self.root.destroy()
+        self.__init__()
 
-    # TODO
+    def start_convert(self, input, output_hq, output_240p):
+        # TODO libfdk_aac
+        command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
+        logging.critical('convert command: ' + command_hq)
+        self.process_hq = subprocess.Popen(command_hq, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                           universal_newlines=True, shell=True)
+        for line in self.process_hq.stdout:
+            reg = re.search('\d\d:\d\d:\d\d', line)
+            self.x_hq = reg.group(0) if reg else ''
+
+        command_240p = "ffmpeg -y  -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+        logging.critical('convert command: ' + command_240p)
+        self.process_240p = subprocess.Popen(command_240p, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                             universal_newlines=True, shell=True)
+        for line in self.process_240p.stdout:
+            reg = re.search('\d\d:\d\d:\d\d', line)
+            self.x_240p = reg.group(0) if reg else ''
+
     def convert(self):
-        self.file_name = filedialog.askopenfilename(filetypes=(("mkv files", "*.mkv"), ("All files", "*.*")))
+        self.file_name = filedialog.askopenfilename(filetypes=(("mp4 files", "*.mp4"), ("All files", "*.*")))
         if self.file_name == "":
             return None
-        directory = os.path.join(os.path.dirname(self.file_name), 'mp4')
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        directory_hq = os.path.join(os.path.dirname(self.file_name), 'hq')
+        if not os.path.exists(directory_hq):
+            os.makedirs(directory_hq)
+        directory_240p = os.path.join(os.path.dirname(self.file_name), '240p')
+        if not os.path.exists(directory_240p):
+            os.makedirs(directory_240p)
 
-        modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
-        t = self.load_loading(modified_file_name)
+        command = "ffprobe -hide_banner -i \"" + str(self.file_name) + "\""
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True, shell=True)
+        out, err = p.communicate()
+        reg = re.search('Duration: \d\d:\d\d:\d\d', str(err) + str(out))
+        self.duration = reg.group(0) if reg else "00:40:00"
+        reg = re.search('\d\d:\d\d:\d\d', self.duration)
+        self.duration = self.parse_seconds(reg.group(0)) if reg else self.parse_seconds("00:40:00")
+
+        modified_file_name_hq = os.path.join(directory_hq, os.path.basename(self.file_name))
+        modified_file_name_240p = os.path.join(directory_240p, os.path.basename(self.file_name))
+        t = self.load_loading_2(modified_file_name_hq, modified_file_name_240p)
+        self.x_hq = ''
+        self.x_240p = ''
         t.start()
-
-        for line in self.process.stdout:
-            reg = re.search('\d\d:\d\d:\d\d', line)
-            x = reg.group(0) if reg else ''
-            try:
-                self.percent.pack_forget()
-            except:
-                pass
-            self.percent = tk.Label(self.root, text=x)
-            self.percent.pack()
+        while t.is_alive():
+            # try:
+            #     self.percent.pack_forget()
+            # except:
+            #     pass
+            # self.percent = tk.Label(self.root, text='مدت زمان تبدیل شده' + os.linesep + self.x_hq)
+            # self.percent.pack()
+            self.progress_hq['value'] = self.parse_seconds(self.x_hq) / self.duration * 100
+            self.progress_240p['value'] = self.parse_seconds(self.x_240p) / self.duration * 100
             self.root.update()
-        os.startfile(directory)
+        os.startfile(os.path.dirname(self.file_name))
         try:
             self.load_landing()
         except:
             pass
+
+        toaster = ToastNotifier()
+        toaster.show_toast("Convert Finished",
+                           self.file_name,
+                           icon_path='alaa.ico',
+                           duration=60*10,
+                           threaded=True)
+        self.root.destroy()
+        self.__init__()
+
+    def parse_seconds(self, t):
+        if t in ['', ' ', None]:
+            return 0
+        tx = time.strptime(t, '%H:%M:%S')
+        seconds = datetime.timedelta(hours=tx.tm_hour, minutes=tx.tm_min, seconds=tx.tm_sec).total_seconds()
+        return seconds
 
     def load_login(self):
         self.load_content_view()
@@ -300,12 +351,14 @@ class Main(object):
     def load_landing(self):
         self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
         try:
+            self.progress_240p.pack_forget()
+            self.progress_hq.pack_forget()
             self.loading.pack_forget()
             self.percent.pack_forget()
         except:
             pass
         self.config_menu()
-        self.loading = tk.Label(self.root, text=os.linesep * 1 + 'welcome!')
+        self.loading = tk.Label(self.root, text=os.linesep * 3 + 'سلام آلایی عزیز')
         self.loading.pack()
         self.root.update()
 
@@ -322,10 +375,35 @@ class Main(object):
         except:
             pass
         self.root.config(menu="")
+        self.loading = tk.Label(self.root, text=os.linesep * 3)
+        self.loading.pack()
+        self.root.update()
+        return t
+
+    def load_loading_2(self, modified_file_name_hq, modified_file_name_240p):
+        self.root.protocol("WM_DELETE_WINDOW", self.root.iconify)
+        t = threading.Thread(target=self.start_convert,
+                             args=(self.file_name, modified_file_name_hq, modified_file_name_240p))
+        try:
+            self.loading.pack_forget()
+            self.mblbox.pack_forget()
+            self.pwdbox.pack_forget()
+            self.x1.pack_forget()
+            self.x2.pack_forget()
+            self.x3.pack_forget()
+        except:
+            pass
+        self.root.config(menu="")
         self.loading = tk.Label(self.root, text=os.linesep * 1)
         self.loading.pack()
-        # self.progress = ttk.Progressbar(self.root, orient=HORIZONTAL, length=150, mode='determinate')
-        # self.progress.pack()
+        self.title1 = tk.Label(self.root, text='HQ')
+        self.title1.pack()
+        self.progress_hq = ttk.Progressbar(self.root, orient=tk.HORIZONTAL, length=200, mode='determinate')
+        self.progress_hq.pack()
+        self.title2 = tk.Label(self.root, text='240p')
+        self.title2.pack()
+        self.progress_240p = ttk.Progressbar(self.root, orient=tk.HORIZONTAL, length=200, mode='determinate')
+        self.progress_240p.pack()
         self.root.update()
         return t
 
@@ -356,7 +434,7 @@ class Main(object):
         self.x3.pack(side='top')
 
     def init_window(self):
-        self.root.geometry("200x150")
+        self.root.geometry("400x300")
         self.root.resizable(height=None, width=None)
         self.root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
         self.root.title('Alaa studio app')
@@ -365,7 +443,7 @@ class Main(object):
         self.menubar = tk.Menu(self.root)
         self.add_voice("Axis", self.axis)
         # self.add_voice("Convert", self.load_login)
-        # self.add_voice("Convert", self.convert)
+        self.add_voice("Convert", self.convert)
         self.add_voice("Quit", self.quit_window)
         self.config_menu()
 
@@ -384,7 +462,7 @@ class Main(object):
 
 
 def setup_logging():
-    with open('log.txt', 'r+') as logfile:
+    with open('log.txt', 'w+') as logfile:
         content = logfile.readlines()
         content = content[-1000:]
         logfile.seek(0)
