@@ -253,7 +253,7 @@ class Main(object):
         toaster.show_toast("Axis Finished",
                            self.file_name,
                            icon_path='alaa.ico',
-                           duration=60*10,
+                           duration=10,
                            threaded=True)
         self.root.destroy()
         self.__init__()
@@ -294,9 +294,9 @@ class Main(object):
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              universal_newlines=True, shell=True)
         out, err = p.communicate()
-        reg = re.search('Duration: \d\d:\d\d:\d\d', str(err) + str(out))
-        self.duration = reg.group(0) if reg else "00:40:00"
-        reg = re.search('\d\d:\d\d:\d\d', self.duration)
+        # reg = re.search('Duration: \d\d:\d\d:\d\d', str(err) + str(out))
+        # self.duration = reg.group(0) if reg else "00:40:00"
+        reg = re.search('\d\d:\d\d:\d\d', str(err) + str(out))
         self.duration = self.parse_seconds(reg.group(0)) if reg else self.parse_seconds("00:40:00")
 
         modified_file_name_hq = os.path.join(directory_hq, os.path.basename(self.file_name))
@@ -317,7 +317,7 @@ class Main(object):
             self.root.update()
         os.startfile(os.path.dirname(self.file_name))
         try:
-            self.load_landing()
+            self.load_landing_2()
         except:
             pass
 
@@ -325,7 +325,7 @@ class Main(object):
         toaster.show_toast("Convert Finished",
                            self.file_name,
                            icon_path='alaa.ico',
-                           duration=60*10,
+                           duration=10,
                            threaded=True)
         self.root.destroy()
         self.__init__()
@@ -349,6 +349,18 @@ class Main(object):
         self.root.update()
 
     def load_landing(self):
+        self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
+        try:
+            self.loading.pack_forget()
+            self.percent.pack_forget()
+        except:
+            pass
+        self.config_menu()
+        self.loading = tk.Label(self.root, text=os.linesep * 3 + 'سلام آلایی عزیز')
+        self.loading.pack()
+        self.root.update()
+
+    def load_landing_2(self):
         self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
         try:
             self.progress_240p.pack_forget()
