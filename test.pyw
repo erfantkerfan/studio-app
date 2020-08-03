@@ -238,6 +238,11 @@ class Main(object):
                 self.percent.pack_forget()
             except:
                 pass
+            try:
+                percent = os.path.getsize(modified_file_name) / os.path.getsize(self.file_name) * 100
+                self.progress['value'] = percent
+            except:
+                pass
             self.percent = tk.Label(self.root, text='مدت زمان تبدیل شده' + os.linesep + self.x)
             self.percent.pack()
             self.root.update()
@@ -260,17 +265,22 @@ class Main(object):
 
     def start_convert(self, input, output_hq, output_240p):
         # TODO libfdk_aac
-        command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
+        # command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
+        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
+        command_hq = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
         logging.critical('convert command: ' + command_hq)
         self.process_hq = subprocess.Popen(command_hq, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            universal_newlines=True, shell=True)
         for line in self.process_hq.stdout:
+            # print(line)
             reg = re.search('\d\d:\d\d:\d\d', line)
             self.x_hq = reg.group(0) if reg else ''
 
-        command_240p = "ffmpeg -y  -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+        # command_240p = "ffmpeg -y  -v quiet -stats -i \"" + str(
+        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+        command_240p = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
         logging.critical('convert command: ' + command_240p)
         self.process_240p = subprocess.Popen(command_240p, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                              universal_newlines=True, shell=True)
@@ -283,21 +293,22 @@ class Main(object):
         if self.file_name == "":
             return None
 
-        directory_hq = os.path.join(os.path.dirname(self.file_name), 'hq')
+        directory_hq = os.path.join(os.path.dirname(os.path.dirname(self.file_name)), 'hq')
         if not os.path.exists(directory_hq):
             os.makedirs(directory_hq)
-        directory_240p = os.path.join(os.path.dirname(self.file_name), '240p')
+        directory_240p = os.path.join(os.path.dirname(os.path.dirname(self.file_name)), '240p')
         if not os.path.exists(directory_240p):
             os.makedirs(directory_240p)
 
-        command = "ffprobe -hide_banner -i \"" + str(self.file_name) + "\""
+        # command = "ffprobe -hide_banner -i \"" + str(self.file_name) + "\""
+        command = "ffprobe -v error -hide_banner -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -i \"" + str(
+            self.file_name) + "\""
+        logging.critical('ffprobe command: ' + command)
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              universal_newlines=True, shell=True)
         out, err = p.communicate()
-        # reg = re.search('Duration: \d\d:\d\d:\d\d', str(err) + str(out))
-        # self.duration = reg.group(0) if reg else "00:40:00"
-        reg = re.search('\d\d:\d\d:\d\d', str(err) + str(out))
-        self.duration = self.parse_seconds(reg.group(0)) if reg else self.parse_seconds("00:40:00")
+        reg = re.search('\d*\.\d*', str(err) + str(out))
+        self.duration = float(reg.group(0)) if reg else self.parse_seconds("00:20:00")
 
         modified_file_name_hq = os.path.join(directory_hq, os.path.basename(self.file_name))
         modified_file_name_240p = os.path.join(directory_240p, os.path.basename(self.file_name))
@@ -314,8 +325,14 @@ class Main(object):
             # self.percent.pack()
             self.progress_hq['value'] = self.parse_seconds(self.x_hq) / self.duration * 100
             self.progress_240p['value'] = self.parse_seconds(self.x_240p) / self.duration * 100
+            # print(self.parse_seconds(self.x_hq))
+            # print(self.parse_seconds(self.x_240p))
+            # print(self.parse_seconds(self.x_hq) / self.duration * 100)
+            # print(self.parse_seconds(self.x_240p) / self.duration * 100)
+            # print(self.duration)
+            # print('*' * 20)
             self.root.update()
-        os.startfile(os.path.dirname(self.file_name))
+        os.startfile(os.path.dirname(self.file_name).replace('/', '\\'))
         try:
             self.load_landing_2()
         except:
@@ -352,6 +369,7 @@ class Main(object):
         self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
         try:
             self.loading.pack_forget()
+            self.progress.pack_forget()
             self.percent.pack_forget()
         except:
             pass
@@ -389,6 +407,8 @@ class Main(object):
         self.root.config(menu="")
         self.loading = tk.Label(self.root, text=os.linesep * 3)
         self.loading.pack()
+        self.progress = ttk.Progressbar(self.root, orient=tk.HORIZONTAL, length=200, mode='determinate')
+        self.progress.pack()
         self.root.update()
         return t
 
@@ -474,7 +494,11 @@ class Main(object):
 
 
 def setup_logging():
-    with open('log.txt', 'w+') as logfile:
+    if not os.path.exists('log.txt'):
+        with open('log.txt', 'w+') as logfile:
+            pass
+
+    with open('log.txt', 'r+') as logfile:
         content = logfile.readlines()
         content = content[-1000:]
         logfile.seek(0)
