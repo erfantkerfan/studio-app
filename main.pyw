@@ -187,7 +187,8 @@ class Main(object):
         self.__init__()
 
     def start_convert(self, input, output_hq, output_240p):
-        # TODO libfdk_aac
+        # TODO:libfdk_aac
+        # TODO:big file size
         # command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
         #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
         command_hq = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
