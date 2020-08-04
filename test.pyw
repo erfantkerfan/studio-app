@@ -300,7 +300,6 @@ class Main(object):
         if not os.path.exists(directory_240p):
             os.makedirs(directory_240p)
 
-        # command = "ffprobe -hide_banner -i \"" + str(self.file_name) + "\""
         command = "ffprobe -v error -hide_banner -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -i \"" + str(
             self.file_name) + "\""
         logging.critical('ffprobe command: ' + command)
