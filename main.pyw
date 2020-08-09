@@ -123,9 +123,19 @@ class Main(object):
 
     def convert(self):
         self.file_name = filedialog.askopenfilename(filetypes=(("mp4 files", "*.mp4"), ("All files", "*.*")))
+        regex = re.compile(r"C:\\Alaa\\Finish\\\d{3,4}\\HD_720p")
         if self.file_name == "":
             return None
+        elif not regex.match(str(self.file_name).replace('/', '\\')):
+            toaster = ToastNotifier()
+            toaster.show_toast("Path Invalid",
+                               r'select a file in C:\Alaa\Finish',
+                               icon_path='alaa.ico',
+                               duration=2,
+                               threaded=True)
+            return None
 
+        # return None
         directory_hq = os.path.join(os.path.dirname(os.path.dirname(self.file_name)), 'hq')
         if not os.path.exists(directory_hq):
             os.makedirs(directory_hq)
@@ -192,7 +202,7 @@ class Main(object):
         # command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
         #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
         command_hq = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
         logging.critical('convert command: ' + command_hq)
         self.process_hq = subprocess.Popen(command_hq, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            universal_newlines=True, shell=True)
@@ -201,9 +211,9 @@ class Main(object):
             self.ffmpeg_time_hq = reg.group(0) if reg else ''
 
         # command_240p = "ffmpeg -y  -v quiet -stats -i \"" + str(
-        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
         command_240p = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
         logging.critical('convert command: ' + command_240p)
         self.process_240p = subprocess.Popen(command_240p, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                              universal_newlines=True, shell=True)
