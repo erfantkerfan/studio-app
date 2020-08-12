@@ -13,10 +13,36 @@ import os
 import re
 import threading
 from win10toast import ToastNotifier
-import helper
 import pika
 import socket
 from functools import partial
+
+
+def parse_seconds(t):
+    if t in ['', ' ', None]:
+        return 0
+    tx = time.strptime(t, '%H:%M:%S')
+    seconds = datetime.timedelta(hours=tx.tm_hour, minutes=tx.tm_min, seconds=tx.tm_sec).total_seconds()
+    return seconds
+
+
+def setup_logging():
+    if not os.path.exists('log.txt'):
+        with open('log.txt', 'w+') as _:
+            pass
+
+    with open('log.txt', 'r+') as logfile:
+        content = logfile.readlines()
+        content = content[-1000:]
+        logfile.seek(0)
+        logfile.writelines(content)
+        logfile.truncate()
+
+    logging.basicConfig(filename='log.txt',
+                        filemode='a',
+                        format='%(asctime)s ---> %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.CRITICAL)
 
 
 class Main(object):
@@ -161,7 +187,7 @@ class Main(object):
                                            universal_newlines=True, shell=True)
         out, err = ffprobe_process.communicate()
         reg = re.search('\d*\.\d*', str(err) + str(out))
-        self.total_duration = float(reg.group(0)) if reg else helper.parse_seconds('00:15:00')
+        self.total_duration = float(reg.group(0)) if reg else parse_seconds('00:15:00')
         modified_file_name_hq = os.path.join(directory_hq, os.path.basename(self.file_name))
         modified_file_name_240p = os.path.join(directory_240p, os.path.basename(self.file_name))
         self.root.protocol('WM_DELETE_WINDOW', self.root.iconify)
@@ -184,8 +210,8 @@ class Main(object):
         self.ffmpeg_time_240p = ''
         thread.start()
         while thread.is_alive():
-            self.progress_hq['value'] = helper.parse_seconds(self.ffmpeg_time_hq) / self.total_duration * 100
-            self.progress_240p['value'] = helper.parse_seconds(self.ffmpeg_time_240p) / self.total_duration * 100
+            self.progress_hq['value'] = parse_seconds(self.ffmpeg_time_hq) / self.total_duration * 100
+            self.progress_240p['value'] = parse_seconds(self.ffmpeg_time_240p) / self.total_duration * 100
             self.root.update()
 
         os.startfile(os.path.dirname(self.file_name).replace('/', '\\'))
@@ -280,5 +306,5 @@ class Main(object):
 
 
 if __name__ == '__main__':
-    helper.setup_logging()
+    setup_logging()
     panel = Main()
