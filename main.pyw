@@ -4,6 +4,7 @@ import time
 import datetime
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import simpledialog
 from tkinter import ttk
 from PIL import ImageTk, Image
 import requests
@@ -13,6 +14,9 @@ import re
 import threading
 from win10toast import ToastNotifier
 import helper
+import pika
+import socket
+from functools import partial
 
 
 class Main(object):
@@ -40,9 +44,16 @@ class Main(object):
     def add_menu(self):
         self.menubar = tk.Menu(self.root)
         self.add_voice("Axis", self.axis)
-        # self.add_voice("Convert", self.load_login)
-        self.add_voice("Convert", self.convert)
-        self.add_voice("Quit", self.quit_window)
+        if 1:
+            self.rabi_menu = tk.Menu(self.menubar, tearoff=0)
+            self.rabi_menu.add_command(label='studio', command=partial(self.send_convert_command, 'studio'))
+            self.rabi_menu.add_command(label='announce', command=partial(self.send_convert_command, 'announce'))
+            self.rabi_menu.add_command(label='rabiea', command=partial(self.send_convert_command, 'rabiea'))
+            self.rabi_menu.add_command(label='rabiea-480', command=partial(self.send_convert_command, 'rabiea-480'))
+            self.rabi_menu.add_command(label='rabiea-sizeless',
+                                       command=partial(self.send_convert_command, 'rabiea-sizeless'))
+            self.menubar.add_cascade(label='Convert', menu=self.rabi_menu)
+        self.add_voice('Quit', self.quit_window)
         self.config_menu()
 
     def add_voice(self, label, command):
@@ -58,17 +69,17 @@ class Main(object):
     """axis section"""
 
     def axis(self):
-        self.file_name = filedialog.askopenfilename(filetypes=(("mkv files", "*.mkv"), ("All files", "*.*")))
-        if self.file_name == "":
+        self.file_name = filedialog.askopenfilename(filetypes=(('mkv files', '*.mkv'), ('All files', '*.*')))
+        if self.file_name == '':
             return None
         directory = os.path.join(os.path.dirname(self.file_name), 'mp4')
         if not os.path.exists(directory):
             os.makedirs(directory)
         modified_file_name = os.path.join(directory, os.path.basename(self.file_name).replace('mkv', 'mp4'))
         thread = threading.Thread(target=self.start_axis, args=(self.file_name, modified_file_name))
-        self.root.protocol("WM_DELETE_WINDOW", self.root.iconify)
+        self.root.protocol('WM_DELETE_WINDOW', self.root.iconify)
         self.welcome_text.pack_forget()
-        self.root.config(menu="")
+        self.root.config(menu='')
         self.space = tk.Label(self.root, text=os.linesep * 3)
         self.space.pack()
         self.progress_bar = ttk.Progressbar(self.root, orient=tk.HORIZONTAL, length=200, mode='determinate')
@@ -92,7 +103,7 @@ class Main(object):
             self.root.update()
 
         os.startfile(directory.replace('/', '\\'))
-        self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
+        self.root.protocol('WM_DELETE_WINDOW', self.quit_window)
         self.space.pack_forget()
         self.progress_bar.pack_forget()
         self.percent_text.pack_forget()
@@ -100,7 +111,7 @@ class Main(object):
         self.root.update()
 
         toaster = ToastNotifier()
-        toaster.show_toast("Axis Finished",
+        toaster.show_toast('Axis Finished',
                            self.file_name,
                            icon_path='alaa.ico',
                            duration=10,
@@ -109,8 +120,8 @@ class Main(object):
         self.__init__()
 
     def start_axis(self, input, output):
-        command = "ffmpeg -y -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
+        command = 'ffmpeg -y -v quiet -stats -i \'' + str(
+            input) + '\' -metadata title=\'@alaa_sanatisharif\' -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \'' + output + "\""
         logging.critical('axis command: ' + command)
         self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         universal_newlines=True, shell=True)
@@ -122,13 +133,13 @@ class Main(object):
     """convert section"""
 
     def convert(self):
-        self.file_name = filedialog.askopenfilename(filetypes=(("mp4 files", "*.mp4"), ("All files", "*.*")))
-        regex = re.compile(r"C:\\Alaa\\Finish\\\d{3,4}\\HD_720p")
-        if self.file_name == "":
+        self.file_name = filedialog.askopenfilename(filetypes=(('mp4 files', '*.mp4'), ('All files', '*.*')))
+        regex = re.compile(r'C:\\Alaa\\Finish\\\d{3,4}\\HD_720p')
+        if self.file_name == '':
             return None
         elif not regex.match(str(self.file_name).replace('/', '\\')):
             toaster = ToastNotifier()
-            toaster.show_toast("Path Invalid",
+            toaster.show_toast('Path Invalid',
                                r'select a file in C:\Alaa\Finish',
                                icon_path='alaa.ico',
                                duration=2,
@@ -143,21 +154,21 @@ class Main(object):
         if not os.path.exists(directory_240p):
             os.makedirs(directory_240p)
 
-        command = "ffprobe -v error -hide_banner -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -i \"" + str(
-            self.file_name) + "\""
+        command = 'ffprobe -v error -hide_banner -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -i \'' + str(
+            self.file_name) + '\''
         logging.critical('ffprobe command: ' + command)
         ffprobe_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            universal_newlines=True, shell=True)
         out, err = ffprobe_process.communicate()
         reg = re.search('\d*\.\d*', str(err) + str(out))
-        self.total_duration = float(reg.group(0)) if reg else helper.parse_seconds("00:15:00")
+        self.total_duration = float(reg.group(0)) if reg else helper.parse_seconds('00:15:00')
         modified_file_name_hq = os.path.join(directory_hq, os.path.basename(self.file_name))
         modified_file_name_240p = os.path.join(directory_240p, os.path.basename(self.file_name))
-        self.root.protocol("WM_DELETE_WINDOW", self.root.iconify)
+        self.root.protocol('WM_DELETE_WINDOW', self.root.iconify)
         thread = threading.Thread(target=self.start_convert,
                                   args=(self.file_name, modified_file_name_hq, modified_file_name_240p))
         self.welcome_text.pack_forget()
-        self.root.config(menu="")
+        self.root.config(menu='')
         self.space = tk.Label(self.root, text=os.linesep * 1)
         self.space.pack()
         self.title_hq = tk.Label(self.root, text='HQ')
@@ -178,7 +189,7 @@ class Main(object):
             self.root.update()
 
         os.startfile(os.path.dirname(self.file_name).replace('/', '\\'))
-        self.root.protocol("WM_DELETE_WINDOW", self.quit_window)
+        self.root.protocol('WM_DELETE_WINDOW', self.quit_window)
         self.space.pack_forget()
         self.title_hq.pack_forget()
         self.progress_hq.pack_forget()
@@ -188,7 +199,7 @@ class Main(object):
         self.root.update()
 
         toaster = ToastNotifier()
-        toaster.show_toast("Convert Finished",
+        toaster.show_toast('Convert Finished',
                            self.file_name,
                            icon_path='alaa.ico',
                            duration=10,
@@ -199,10 +210,10 @@ class Main(object):
     def start_convert(self, input, output_hq, output_240p):
         # TODO:libfdk_aac
         # TODO:big file size
-        # command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
-        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
-        command_hq = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
+        # command_hq = 'ffmpeg -y  -v quiet -stats -i \'' + str(
+        #     input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \'' + output_hq + '\''
+        command_hq = 'ffmpeg -y -hwaccel cuda -v quiet -stats -i \'' + str(
+            input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \'' + output_hq + '\''
         logging.critical('convert command: ' + command_hq)
         self.process_hq = subprocess.Popen(command_hq, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            universal_newlines=True, shell=True)
@@ -210,10 +221,10 @@ class Main(object):
             reg = re.search('\d\d:\d\d:\d\d', line)
             self.ffmpeg_time_hq = reg.group(0) if reg else ''
 
-        # command_240p = "ffmpeg -y  -v quiet -stats -i \"" + str(
-        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
-        command_240p = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
-            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+        # command_240p = 'ffmpeg -y  -v quiet -stats -i \'' + str(
+        #     input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \'' + output_240p + '\''
+        command_240p = 'ffmpeg -y -hwaccel cuda -v quiet -stats -i \'' + str(
+            input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \'' + output_240p + '\''
         logging.critical('convert command: ' + command_240p)
         self.process_240p = subprocess.Popen(command_240p, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                              universal_newlines=True, shell=True)
@@ -221,6 +232,51 @@ class Main(object):
             reg = re.search('\d\d:\d\d:\d\d', line)
             self.ffmpeg_time_240p = reg.group(0) if reg else ''
         return None
+
+    """send command section"""
+
+    def send_convert_command(self, tag):
+        password_list = ['logitech']
+        if tag in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
+            password = simpledialog.askstring("Password", "Enter password:", show='*')
+            if password not in password_list:
+                try:
+                    toaster = ToastNotifier()
+                    toaster.show_toast('Wrong password',
+                                       'Wrong password for ' + tag,
+                                       icon_path='alaa.ico',
+                                       duration=2,
+                                       threaded=True)
+                except:
+                    pass
+                finally:
+                    return None
+        host = 'localhost'
+        # host = '192.168.4.2'
+        # host = '192.168.5.36'
+        queue_name = 'studio-app'
+        message = {
+            'tag': tag,
+            'ip': str(socket.gethostbyname(socket.gethostname())),
+            'datetime': str(datetime.datetime.now())
+        }
+        logging.critical('convert message: ' + json.dumps(message))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        channel = connection.channel()
+        channel.queue_declare(queue=queue_name)
+        channel.basic_publish(exchange='',
+                              routing_key=queue_name,
+                              body=json.dumps(message))
+        connection.close()
+        try:
+            toaster = ToastNotifier()
+            toaster.show_toast('Convert Command sent',
+                               message['ip'],
+                               icon_path='alaa.ico',
+                               duration=2,
+                               threaded=True)
+        except:
+            pass
 
 
 if __name__ == '__main__':
