@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import subprocess
 import time
@@ -45,10 +46,94 @@ def setup_logging():
                         level=logging.CRITICAL)
 
 
+def attempt_login():
+    url = "https://alaatv.com/api/v2/login"
+    status_code = None
+    headers = {
+        'Accept': 'application/json',
+        'Cookie': 'nocache=1',
+        'Accept-Encoding': 'utf-8'
+    }
+    while status_code != 200:
+        credentials = Login()
+        payload = {'mobile': credentials.mobile, 'password': credentials.password}
+        response = requests.request("POST", url, headers=headers, data=payload)
+        try:
+            status_code = response.status_code
+            data = json.loads(response.content)
+        except:
+            status_code = None
+        try:
+            if str(data['data']['user']['first_name']) == "None":
+                status_code = None
+                user_id = None
+            else:
+                name = str(data['data']['user']['first_name']) + ' ' + str(data['data']['user']['last_name'])
+                user_id = str(data['data']['user']['id'])
+        except:
+            name = "کاربر ناشناس"
+            user_id = "Unknown"
+        logging.critical("logged in user_id: " + user_id)
+    return data['data']['user']
+
+
+class Login(object):
+    def __init__(self):
+        self.root = tk.Tk()
+        self.add_menu()
+        self.init_window()
+        self.load_landing()
+        self.root.mainloop()
+
+    def add_menu(self):
+        self.menubar = tk.Menu(self.root)
+        self.add_voice("Quit", self.quit_window)
+        self.config_menu()
+
+    def init_window(self):
+        self.root.geometry("250x150")
+        self.root.resizable(height=None, width=None)
+        self.root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        self.root.title('Alaa studio app')
+
+    def load_landing(self):
+        self.mblbox = tk.Entry(self.root)
+        self.pwdbox = tk.Entry(self.root, show='*')
+
+        self.x1 = tk.Label(self.root, text='mobile')
+        self.x1.pack(side='top')
+        self.mblbox.pack(side='top')
+
+        self.x2 = tk.Label(self.root, text='password')
+        self.x2.pack(side='top')
+
+        self.pwdbox.pack(side='top')
+        self.pwdbox.bind('<Return>', self.onpwdentry)
+
+        self.x3 = tk.Button(self.root, command=self.onpwdentry, text='Login')
+        self.x3.pack(side='top', pady=10)
+
+    def add_voice(self, label, command):
+        self.menubar.add_command(label=label, command=command)
+
+    def config_menu(self):
+        self.root.config(menu=self.menubar)
+
+    def onpwdentry(self, event):
+        self.password = self.pwdbox.get()
+        self.mobile = self.mblbox.get()
+        self.root.destroy()
+
+    def quit_window(self):
+        self.root.destroy()
+        os._exit(0)
+
+
 class Main(object):
     """load the main window"""
 
-    def __init__(self):
+    def __init__(self, user):
+        self.user_id = user['id']
         self.root = tk.Tk()
         self.add_menu()
         self.init_window()
@@ -57,7 +142,8 @@ class Main(object):
 
     def load_landing(self):
         self.config_menu()
-        self.welcome_text = tk.Label(self.root, text=os.linesep * 3 + 'سلام آلایی عزیز')
+        self.welcome_text = tk.Label(self.root, text=os.linesep * 3 + 'سلام ' + user['first_name'] + ' ' + user[
+            'last_name'] + ' عزیز')
         self.welcome_text.pack()
         self.root.update()
 
@@ -70,15 +156,14 @@ class Main(object):
     def add_menu(self):
         self.menubar = tk.Menu(self.root)
         self.add_voice("Axis", self.axis)
-        if 1:
-            self.rabi_menu = tk.Menu(self.menubar, tearoff=0)
-            self.rabi_menu.add_command(label='studio', command=partial(self.send_convert_command, 'studio'))
-            self.rabi_menu.add_command(label='announce', command=partial(self.send_convert_command, 'announce'))
-            self.rabi_menu.add_command(label='rabiea', command=partial(self.send_convert_command, 'rabiea'))
-            self.rabi_menu.add_command(label='rabiea-480', command=partial(self.send_convert_command, 'rabiea-480'))
-            self.rabi_menu.add_command(label='rabiea-sizeless',
-                                       command=partial(self.send_convert_command, 'rabiea-sizeless'))
-            self.menubar.add_cascade(label='Convert', menu=self.rabi_menu)
+        self.rabi_menu = tk.Menu(self.menubar, tearoff=0)
+        self.rabi_menu.add_command(label='studio', command=partial(self.send_convert_command, 'studio'))
+        self.rabi_menu.add_command(label='announce', command=partial(self.send_convert_command, 'announce'))
+        self.rabi_menu.add_command(label='rabiea', command=partial(self.send_convert_command, 'rabiea'))
+        self.rabi_menu.add_command(label='rabiea-480', command=partial(self.send_convert_command, 'rabiea-480'))
+        self.rabi_menu.add_command(label='rabiea-sizeless',
+                                   command=partial(self.send_convert_command, 'rabiea-sizeless'))
+        self.menubar.add_cascade(label='Convert', menu=self.rabi_menu)
         self.add_voice('Quit', self.quit_window)
         self.config_menu()
 
@@ -143,11 +228,11 @@ class Main(object):
                            duration=10,
                            threaded=True)
         self.root.destroy()
-        self.__init__()
+        self.__init__(user)
 
     def start_axis(self, input, output):
-        command = 'ffmpeg -y -v quiet -stats -i \'' + str(
-            input) + '\' -metadata title=\'@alaa_sanatisharif\' -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \'' + output + "\""
+        command = "ffmpeg -y -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"" + output + "\""
         logging.critical('axis command: ' + command)
         self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         universal_newlines=True, shell=True)
@@ -172,7 +257,6 @@ class Main(object):
                                threaded=True)
             return None
 
-        # return None
         directory_hq = os.path.join(os.path.dirname(os.path.dirname(self.file_name)), 'hq')
         if not os.path.exists(directory_hq):
             os.makedirs(directory_hq)
@@ -180,8 +264,8 @@ class Main(object):
         if not os.path.exists(directory_240p):
             os.makedirs(directory_240p)
 
-        command = 'ffprobe -v error -hide_banner -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -i \'' + str(
-            self.file_name) + '\''
+        command = "ffprobe -v error -hide_banner -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -i \"" + str(
+            self.file_name) + "\""
         logging.critical('ffprobe command: ' + command)
         ffprobe_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            universal_newlines=True, shell=True)
@@ -236,10 +320,10 @@ class Main(object):
     def start_convert(self, input, output_hq, output_240p):
         # TODO:libfdk_aac
         # TODO:big file size
-        # command_hq = 'ffmpeg -y  -v quiet -stats -i \'' + str(
-        #     input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \'' + output_hq + '\''
-        command_hq = 'ffmpeg -y -hwaccel cuda -v quiet -stats -i \'' + str(
-            input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \'' + output_hq + '\''
+        # command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
+        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
+        command_hq = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
         logging.critical('convert command: ' + command_hq)
         self.process_hq = subprocess.Popen(command_hq, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            universal_newlines=True, shell=True)
@@ -247,10 +331,10 @@ class Main(object):
             reg = re.search('\d\d:\d\d:\d\d', line)
             self.ffmpeg_time_hq = reg.group(0) if reg else ''
 
-        # command_240p = 'ffmpeg -y  -v quiet -stats -i \'' + str(
-        #     input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \'' + output_240p + '\''
-        command_240p = 'ffmpeg -y -hwaccel cuda -v quiet -stats -i \'' + str(
-            input) + '\' -metadata title=\'@alaa_sanatisharif\' -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \'' + output_240p + '\''
+        # command_240p = "ffmpeg -y  -v quiet -stats -i \"" + str(
+        #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
+        command_240p = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
+            input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec h264_nvenc -crf 27 -r 24 -preset slow -pix_fmt yuv420p -tune film -acodec aac -ab 64k -movflags +faststart \"" + output_240p + "\""
         logging.critical('convert command: ' + command_240p)
         self.process_240p = subprocess.Popen(command_240p, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                              universal_newlines=True, shell=True)
@@ -262,10 +346,10 @@ class Main(object):
     """send command section"""
 
     def send_convert_command(self, tag):
-        password_list = ['logitech']
+        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c']
         if tag in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
             password = simpledialog.askstring("Password", "Enter password:", show='*')
-            if password not in password_list:
+            if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
                 try:
                     toaster = ToastNotifier()
                     toaster.show_toast('Wrong password',
@@ -284,6 +368,7 @@ class Main(object):
         message = {
             'tag': tag,
             'ip': str(socket.gethostbyname(socket.gethostname())),
+            'user_id': str(self.user_id),
             'datetime': str(datetime.datetime.now())
         }
         logging.critical('convert message: ' + json.dumps(message))
@@ -307,4 +392,6 @@ class Main(object):
 
 if __name__ == '__main__':
     setup_logging()
-    panel = Main()
+    user = attempt_login()
+    print(user)
+    panel = Main(user)
