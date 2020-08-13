@@ -19,6 +19,8 @@ import socket
 from functools import partial
 
 
+# TODO: self update
+# TODO: cover uload methods
 def parse_seconds(t):
     if t in ['', ' ', None]:
         return 0
