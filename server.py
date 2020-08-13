@@ -13,7 +13,7 @@ def start_studio(message):
 
 def start_announce(message):
     print(message)
-    print('start_announce ...')
+    print('start_announce ... ', end='')
     for folder in [item.name for item in os.scandir(PATH_ANNOUNCE) if item.is_dir()]:
         if os.path.isdir(os.path.join(PATH_ANNOUNCE, folder, PATH_HIGH)):
             if not os.path.exists(os.path.join(PATH_ANNOUNCE, folder, PATH_MID)):
@@ -30,7 +30,7 @@ def start_announce(message):
                     process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                     process.wait()
             shutil.move(os.path.join(PATH_ANNOUNCE, folder), os.path.join(PATH_ANNOUNCE, 'done', folder))
-    print('start_announce done')
+    print('done')
 
 
 def start_rabiea(message):
