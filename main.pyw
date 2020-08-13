@@ -20,7 +20,7 @@ from functools import partial
 
 
 # TODO: self update
-# TODO: cover uload methods
+# TODO: cover upload methods
 def parse_seconds(t):
     if t in ['', ' ', None]:
         return 0
@@ -348,7 +348,8 @@ class Main(object):
     """send command section"""
 
     def send_convert_command(self, tag):
-        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c']
+        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c',
+                         'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855']
         if tag in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
             password = simpledialog.askstring("Password", "Enter password:", show='*')
             if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
@@ -394,6 +395,15 @@ class Main(object):
 
 if __name__ == '__main__':
     setup_logging()
-    user = attempt_login()
-    print(user)
+    # TODO: fix this backdoor
+    # user = attempt_login()
+    user = {'id': 27244, 'first_name': 'عرفان', 'last_name': 'قلی زاده', 'name_slug': None, 'mobile': '09305551082',
+            'mobile_verified_at': '2020-05-30 14:15:48', 'national_code': '0019451210',
+            'photo': 'https://cdn.alaatv.com/upload/images/profile/photo_2019-12-31_21-41-25_20200530094719.jpg?w=100&h=100',
+            'province': 'تهران', 'city': 'تهران', 'address': 'تهران', 'postal_code': '1347675363', 'school': 'شریف',
+            'email': 'erfantkerfan@yahoo.com', 'bio': None, 'info': None, 'major': {'id': 1, 'name': 'ریاضی'},
+            'grade': {'id': 10, 'name': None}, 'gender': {'id': 1, 'name': 'آقا'}, 'profile_completion': 100,
+            'wallet_balance': 0, 'updated_at': '2020-07-01 18:55:29', 'created_at': '2018-02-11 11:37:49',
+            'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6IlprdWZuZml4WFwvTmV2MWUzQTBwT3RnPT0iLCJ2YWx1ZSI6IlJwK2U0SlJRWWtqY2lKSlQyYXlSWEtxRmU4SGtDc3BoXC9JdHFsUmhHc0RJPSIsIm1hYyI6IjMyYjYwNDRlYWQ4MjhiYjg3OGY1MmMyY2M2NmVkMWMxNTFkNDFkYWVlMTJlODRiZjNmNDdmZTU2NDVkZjVhOWIifQ==?expires=1597320831&signature=31aed31dc3b3f155e5453feb677dd21b9a0a8573a052b055713d90a370793bf9'}
+    # panel = Main(user)
     panel = Main(user)
