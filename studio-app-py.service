@@ -2,6 +2,7 @@
 #sudo systemctl daemon-reload
 #sudo systemctl enable studio-app.service
 #sudo systemctl start studio-app.service
+#sudo systemctl restart studio-app.service
 #sudo systemctl status studio-app.service
 #sudo journalctl -f --no-pager --output=cat -u studio-app
 
