@@ -345,8 +345,7 @@ class Main(object):
     """send command section"""
 
     def send_convert_command(self, tag):
-        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c',
-                         'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855']
+        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c']
         if tag in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
             password = simpledialog.askstring("Password", "Enter password:", show='*')
             if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
