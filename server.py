@@ -100,14 +100,14 @@ def start_rabiea(message):
 
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait() + status
-            print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed',
-                                                                                                              'red',
-                                                                                                              attrs=[
-                                                                                                                  'reverse']),
-                  flush=True)
+    print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
+                                                                                                      attrs=[
+                                                                                                          'reverse']),
+          flush=True)
 
 
 def digest(ch, method, properties, body):
+    ch.basic_ack(delivery_tag=method.delivery_tag)
     message = json.loads(body)
     print(termcolor.colored(message, 'cyan'), flush=True)
     if message['tag'] == 'studio':
@@ -120,13 +120,10 @@ def digest(ch, method, properties, body):
         start_rabiea(message)
     else:
         print('Unknown tag context ... ->' + str(message), flush=True)
-    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def listen():
-    # host = 'localhost'
-    # host = '192.168.0.4'
-    host = '192.168.5.36'
+    host = '192.168.4.2'
     queue_name = 'studio-app'
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
     channel = connection.channel()
