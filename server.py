@@ -75,6 +75,7 @@ def start_axis(message):
             command = PATH_FFMPEG + ' -y -i \"' + in_mkv + '\" -metadata title="@alaa_sanatisharif" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"' + out_mp4 + '\" -threads 23'
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait() + status
+            shutil.move(in_mkv, os.path.join(path_studio, 'done'))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
                                                                                                           'reverse']),
@@ -100,6 +101,7 @@ def start_rabiea(message):
 
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait() + status
+            shutil.move(in_mp4, os.path.join(PATH_RABIEA, 'done'))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
                                                                                                           'reverse']),
