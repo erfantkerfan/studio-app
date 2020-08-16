@@ -124,9 +124,7 @@ def digest(ch, method, properties, body):
 
 
 def listen():
-    # host = 'localhost'
-    # host = '192.168.0.4'
-    host = '192.168.5.36'
+    host = '192.168.4.2'
     queue_name = 'studio-app'
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
     channel = connection.channel()

@@ -14,7 +14,6 @@ import requests
 from win10toast import ToastNotifier
 
 
-# TODO: self update
 # TODO: cover upload methods
 def parse_seconds(t):
     if t in ['', ' ', None]:
@@ -320,8 +319,6 @@ class Main(object):
     #     self.__init__()
     #
     # def start_convert(self, input, output_hq, output_240p):
-    #     # TODO:libfdk_aac
-    #     # TODO:big file size
     #     # command_hq = "ffmpeg -y  -v quiet -stats -i \"" + str(
     #     #     input) + "\" -metadata title=\"@alaa_sanatisharif\" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec aac -ab 96k -movflags +faststart \"" + output_hq + "\""
     #     command_hq = "ffmpeg -y -hwaccel cuda -v quiet -stats -i \"" + str(
@@ -364,9 +361,7 @@ class Main(object):
                     pass
                 finally:
                     return None
-        host = 'localhost'
-        # host = '192.168.4.2'
-        # host = '192.168.5.36'
+        host = '192.168.4.2'
         queue_name = 'studio-app'
         message = {
             'tag': tag,
@@ -395,15 +390,5 @@ class Main(object):
 
 if __name__ == '__main__':
     setup_logging()
-    # TODO: fix this backdoor
-    # user = attempt_login()
-    user = {'id': 27244, 'first_name': 'عرفان', 'last_name': 'قلی زاده', 'name_slug': None, 'mobile': '09305551082',
-            'mobile_verified_at': '2020-05-30 14:15:48', 'national_code': '0019451210',
-            'photo': 'https://cdn.alaatv.com/upload/images/profile/photo_2019-12-31_21-41-25_20200530094719.jpg?w=100&h=100',
-            'province': 'تهران', 'city': 'تهران', 'address': 'تهران', 'postal_code': '1347675363', 'school': 'شریف',
-            'email': 'erfantkerfan@yahoo.com', 'bio': None, 'info': None, 'major': {'id': 1, 'name': 'ریاضی'},
-            'grade': {'id': 10, 'name': None}, 'gender': {'id': 1, 'name': 'آقا'}, 'profile_completion': 100,
-            'wallet_balance': 0, 'updated_at': '2020-07-01 18:55:29', 'created_at': '2018-02-11 11:37:49',
-            'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6IlprdWZuZml4WFwvTmV2MWUzQTBwT3RnPT0iLCJ2YWx1ZSI6IlJwK2U0SlJRWWtqY2lKSlQyYXlSWEtxRmU4SGtDc3BoXC9JdHFsUmhHc0RJPSIsIm1hYyI6IjMyYjYwNDRlYWQ4MjhiYjg3OGY1MmMyY2M2NmVkMWMxNTFkNDFkYWVlMTJlODRiZjNmNDdmZTU2NDVkZjVhOWIifQ==?expires=1597320831&signature=31aed31dc3b3f155e5453feb677dd21b9a0a8573a052b055713d90a370793bf9'}
-    # panel = Main(user)
+    user = attempt_login()
     panel = Main(user)
