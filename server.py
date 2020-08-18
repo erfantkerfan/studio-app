@@ -64,6 +64,8 @@ def start_axis(message):
     path_studio = os.path.join(PATH_AXIS, message['ip'])
     for file in [item.name for item in os.scandir(path_studio) if item.is_file()]:
         if file.endswith(('.mkv', '.MKV')):
+            if not os.path.exists(os.path.join(PATH_AXIS, 'done')):
+                os.makedirs(os.path.join(PATH_AXIS, 'done'))
             if not os.path.exists(os.path.join(path_studio, 'done')):
                 os.makedirs(os.path.join(path_studio, 'done'))
             try:
@@ -76,6 +78,7 @@ def start_axis(message):
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait() + status
             shutil.move(in_mkv, os.path.join(path_studio, 'done'))
+            shutil.move(out_mp4, os.path.join(PATH_AXIS, 'done'))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
                                                                                                           'reverse']),
