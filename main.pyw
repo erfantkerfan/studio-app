@@ -106,7 +106,7 @@ class Login(object):
         self.pwdbox.pack(side='top')
         self.pwdbox.bind('<Return>', self.onpwdentry)
 
-        self.x3 = tk.Button(self.root, command=self.onpwdentry, text='Login')
+        self.x3 = tk.Button(self.root, command=partial(self.onpwdentry, '<Return>'), text='Login')
         self.x3.pack(side='top', pady=10)
 
     def add_voice(self, label, command):
