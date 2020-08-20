@@ -26,6 +26,8 @@ def start_studio(message):
                     command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mid + '\" -threads 11 -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_low + '\" -threads 11'
                     process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                     status = process.wait() + status
+            if os.path.exists(os.path.join(path_studio, 'done', folder)):
+                shutil.rmtree(os.path.join(path_studio, 'done', folder))
             shutil.move(os.path.join(path_studio, folder), os.path.join(path_studio, 'done', folder))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
@@ -51,6 +53,8 @@ def start_announce(message):
                     command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 854x854 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_mid + '\" -threads 11 -sws_flags lanczos -s 426x426 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 50k -movflags +faststart \"' + out_low + '\"  -threads 11'
                     process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                     status = process.wait() + status
+            if os.path.exists(os.path.join(PATH_ANNOUNCE, 'done', folder)):
+                shutil.rmtree(os.path.join(PATH_ANNOUNCE, 'done', folder))
             shutil.move(os.path.join(PATH_ANNOUNCE, folder), os.path.join(PATH_ANNOUNCE, 'done', folder))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
@@ -77,7 +81,13 @@ def start_axis(message):
             command = PATH_FFMPEG + ' -y -i \"' + in_mkv + '\" -metadata title="@alaa_sanatisharif" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"' + out_mp4 + '\" -threads 23'
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait() + status
+
+            if os.path.exists(os.path.join(path_studio, 'done', file)):
+                os.remove(os.path.join(path_studio, 'done', file))
             shutil.move(in_mkv, os.path.join(path_studio, 'done'))
+
+            if os.path.exists(os.path.join(PATH_AXIS, 'done', mp4)):
+                os.remove(os.path.join(PATH_AXIS, 'done', mp4))
             shutil.move(out_mp4, os.path.join(PATH_AXIS, 'done'))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
@@ -104,6 +114,8 @@ def start_rabiea(message):
 
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait() + status
+            if os.path.exists(os.path.join(PATH_RABIEA, 'done', file)):
+                os.remove(os.path.join(PATH_RABIEA, 'done', file))
             shutil.move(in_mp4, os.path.join(PATH_RABIEA, 'done'))
     print(termcolor.colored('done', 'green', attrs=['reverse']) if status == 0 else termcolor.colored('failed', 'red',
                                                                                                       attrs=[
