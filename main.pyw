@@ -6,15 +6,17 @@ import os
 import socket
 import time
 import tkinter as tk
+import tkinter.scrolledtext as st
 from functools import partial
 from tkinter import simpledialog
 
+import paramiko
 import pika
 import requests
+from dotenv import load_dotenv
 from win10toast import ToastNotifier
 
 
-# TODO: cover upload methods
 def parse_seconds(t):
     if t in ['', ' ', None]:
         return 0
@@ -164,6 +166,18 @@ class Main(object):
         self.rabi_menu.add_command(label='rabiea-sizeless',
                                    command=partial(self.send_convert_command, 'rabiea-sizeless'))
         self.menubar.add_cascade(label='Rabiea', menu=self.rabi_menu)
+
+        self.upload_menu = tk.Menu(self.menubar, tearoff=0)
+        self.upload_menu.add_command(label='normal', command=partial(self.send_upload_command, 'normal'))
+        self.upload_menu.add_command(label='normal force!', command=partial(self.send_upload_command, 'normal_force'))
+        self.upload_menu.add_command(label='paid', command=partial(self.send_upload_command, 'paid'))
+        self.upload_menu.add_command(label='paid force!', command=partial(self.send_upload_command, 'paid_force'))
+        self.menubar.add_cascade(label='Upload', menu=self.upload_menu)
+
+        self.log_menu = tk.Menu(self.menubar, tearoff=0)
+        self.log_menu.add_command(label='studio', command=partial(self.get_log, 'app'))
+        self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
+        self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
         self.add_voice('Quit', self.quit_window)
         self.config_menu()
@@ -342,10 +356,10 @@ class Main(object):
     #         self.ffmpeg_time_240p = reg.group(0) if reg else ''
     #     return None
 
-    """send command section"""
+    """send convert section"""
 
     def send_convert_command(self, tag):
-        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c']
+        password_list = ['4b9d51c427c2ec93a40c4c9b08eb1d5ac0cdc6d175e135cc03bac8ba2a5918d3']
         if tag in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
             password = simpledialog.askstring("Password", "Enter password:", show='*')
             if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
@@ -378,16 +392,123 @@ class Main(object):
         connection.close()
         try:
             toaster = ToastNotifier()
-            toaster.show_toast('Convert Command sent',
+            toaster.show_toast('Command sent: ' + str(tag),
                                message['ip'],
                                icon_path='alaa.ico',
-                               duration=2,
+                               duration=4,
                                threaded=True)
         except:
             pass
 
+    """send upload section"""
+
+    def send_upload_command(self, tag):
+        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c']
+        if tag in ['normal_force', 'paid_force']:
+            password = simpledialog.askstring("Password", "Enter password:", show='*')
+            if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
+                try:
+                    toaster = ToastNotifier()
+                    toaster.show_toast('Wrong password',
+                                       'Wrong password for ' + tag,
+                                       icon_path='alaa.ico',
+                                       duration=2,
+                                       threaded=True)
+                except:
+                    pass
+                finally:
+                    return None
+        host = '192.168.4.2'
+        queue_name = 'studio-upload'
+        message = {
+            'tag': tag,
+            'ip': str(socket.gethostbyname(socket.gethostname())),
+            'user_id': str(self.user_id),
+            'datetime': str(datetime.datetime.now())
+        }
+        logging.critical('upload message: ' + json.dumps(message))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        channel = connection.channel()
+        channel.queue_declare(queue=queue_name)
+        channel.basic_publish(exchange='',
+                              routing_key=queue_name,
+                              body=json.dumps(message))
+        connection.close()
+        try:
+            toaster = ToastNotifier()
+            toaster.show_toast('Upload sent: ' + str(tag),
+                               message['ip'],
+                               icon_path='alaa.ico',
+                               duration=4,
+                               threaded=True)
+        except:
+            pass
+
+    def get_log(self, tag):
+        host = '192.168.4.2'
+        command = 'journalctl --no-pager -n 20 --output=cat -u studio-' + str(tag)
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(host, username='film', password=PASSWORD)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+
+        try:
+            self.log_win.destroy()
+        except:
+            pass
+        self.log_win = tk.Tk()
+        self.log_win.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        self.log_win.title('Alaa studio app log')
+
+        buttons_frame = tk.Frame(self.log_win)
+        buttons_frame.grid(row=0, column=0, sticky=tk.W + tk.E)
+
+        if tag == 'app':
+            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'app'), text='Refresh')
+            btn_Image.grid(row=0, column=0, padx=10, pady=10)
+        elif tag == 'upload':
+            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'upload'), text='Refresh')
+            btn_Image.grid(row=0, column=0, padx=10, pady=10)
+
+        # Group1 Frame ----------------------------------------------------
+        self.group1 = tk.LabelFrame(self.log_win, text="Log Box", padx=5, pady=5)
+        self.group1.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky=tk.E + tk.W + tk.N + tk.S)
+
+        self.log_win.columnconfigure(0, weight=1)
+        self.log_win.rowconfigure(1, weight=1)
+
+        self.group1.rowconfigure(0, weight=1)
+        self.group1.columnconfigure(0, weight=1)
+
+        # Create the textbox
+        self.txtbox = st.ScrolledText(self.group1, width=125, height=25)
+        self.txtbox.grid(row=0, column=0, sticky=tk.E + tk.W + tk.N + tk.S)
+        lines = ssh_stdout.readlines()
+        ansi_chars = ['\x1b[0m', '\x1b[1m', '\x1b[4m', '\x1b[7m', '\x1b[30m', '\x1b[31m', '\x1b[32m', '\x1b[33m',
+                      '\x1b[34m', '\x1b[35m', '\x1b[36m', '\x1b[37m']
+        ls = []
+        for line in lines:
+            temp = line
+            for ansi in ansi_chars:
+                temp = temp.replace(ansi, '')
+            ls.append(temp)
+        self.txtbox.insert(tk.INSERT, ''.join(ls))
+        self.txtbox.configure(state='disabled')
+
+        tk.mainloop()
+
 
 if __name__ == '__main__':
+    load_dotenv()
+    PASSWORD = os.getenv("PASSWORD_FILM")
     setup_logging()
-    user = attempt_login()
+    # user = attempt_login()
+    user = {'id': 27244, 'first_name': 'عرفان', 'last_name': 'قلی زاده', 'name_slug': None, 'mobile': '09305551082',
+            'mobile_verified_at': '2020-05-30 14:15:48', 'national_code': '0019451210',
+            'photo': 'https://cdn.alaatv.com/upload/images/profile/photo_2019-12-31_21-41-25_20200530094719.jpg?w=100&h=100',
+            'province': 'تهران', 'city': 'تهران', 'address': 'تهران', 'postal_code': '1347675363', 'school': 'شریف',
+            'email': 'erfantkerfan@yahoo.com', 'bio': None, 'info': None, 'major': {'id': 1, 'name': 'ریاضی'},
+            'grade': {'id': 10, 'name': None}, 'gender': {'id': 1, 'name': 'آقا'}, 'profile_completion': 100,
+            'wallet_balance': 0, 'updated_at': '2020-07-01 18:55:29', 'created_at': '2018-02-11 11:37:49',
+            'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6InVKOXViU0JaXC9pYk1lRzR5K292NGx3PT0iLCJ2YWx1ZSI6IitObkRqUVlDeXVMckR1VkpjOFFDcjdPWGdOcVF3WWlqNnJEVHlnZ2RpMzg9IiwibWFjIjoiNGNjMzFkODAxZWUzNmFiZTY2M2I4ZjBmZGZlMjZjNGQwYTE4N2NjNTY2YjczNjBkNTUyMDU3Y2Y5N2RjZWNiOSJ9?expires=1598453854&signature=974a5bda5b682c7aa545ba9f082c91b534e9c44ca589c4f9e64e6288c46893ab'}
     panel = Main(user)
