@@ -4,7 +4,7 @@
 #sudo systemctl start studio-app.service
 #sudo systemctl restart studio-app.service
 #sudo systemctl status studio-app.service
-#sudo journalctl -f --no-pager --output=cat -u studio-app
+#sudo journalctl -f --no-pager -n 1000 --output=cat -u studio-app
 
 [Unit]
 Description=studip-app Service
@@ -21,7 +21,7 @@ StandardInput=tty-force
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=studip-app
-Restart= always
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
