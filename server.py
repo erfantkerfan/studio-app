@@ -9,9 +9,9 @@ import termcolor
 
 
 def start_studio(message):
-    print(termcolor.colored('start_studio ...', 'yellow'), flush=True)
     status = 0
     path_studio = os.path.join(PATH_CONVERT, message['ip'])
+    print(termcolor.colored('start_studio ... ' + get_size(path_studio), 'yellow'), flush=True)
     for folder in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
         if os.path.isdir(os.path.join(path_studio, folder, PATH_HIGH)):
             if not os.path.exists(os.path.join(path_studio, folder, PATH_MID)):
@@ -37,7 +37,7 @@ def start_studio(message):
 
 
 def start_announce(message):
-    print(termcolor.colored('start_announce ...', 'yellow'), flush=True)
+    print(termcolor.colored('start_announce ... ' + get_size(PATH_ANNOUNCE), 'yellow'), flush=True)
     status = 0
     for folder in [item.name for item in os.scandir(PATH_ANNOUNCE) if item.is_dir()]:
         if os.path.isdir(os.path.join(PATH_ANNOUNCE, folder, PATH_HIGH)):
@@ -64,9 +64,9 @@ def start_announce(message):
 
 
 def start_axis(message):
-    print(termcolor.colored('start_axis ...', 'yellow'), flush=True)
     status = 0
     path_studio = os.path.join(PATH_AXIS, message['ip'])
+    print(termcolor.colored('start_axis ... ' + get_size(path_studio), 'yellow'), flush=True)
     for file in [item.name for item in os.scandir(path_studio) if item.is_file()]:
         try:
             if file.endswith(('.mkv', '.MKV')):
@@ -91,7 +91,7 @@ def start_axis(message):
 
 
 def start_rabiea(message):
-    print(termcolor.colored('start_rabiea ...', 'yellow'), flush=True)
+    print(termcolor.colored('start_rabiea ... ' + get_size(PATH_RABIEA), 'yellow'), flush=True)
     status = 0
     for file in [item.name for item in os.scandir(PATH_RABIEA) if item.is_file()]:
         try:
@@ -114,6 +114,28 @@ def start_rabiea(message):
                     os.remove(os.path.join(PATH_RABIEA, file))
         except:
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
+
+
+def get_size(start_path):
+    total_size = 0
+    try:
+        for dirpath, dirnames, filenames in os.walk(start_path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                # skip if it is symbolic link
+                if not os.path.islink(fp) and f != 'done':
+                    total_size += os.path.getsize(fp)
+        if total_size < 1024:
+            size = str(round(total_size)) + ' Byte'
+        elif total_size < 1024 ^ 2:
+            size = str(round(total_size / 1024, 1)) + ' KB'
+        elif total_size < 1024 * 1024 * 1024:
+            size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
+        else:
+            size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
+        return size
+    except:
+        return 'error calculating size'
 
 
 def digest(ch, method, properties, body):
