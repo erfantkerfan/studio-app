@@ -1,4 +1,3 @@
-import base64
 import json
 import os
 import shutil
@@ -12,28 +11,28 @@ from dotenv import load_dotenv
 
 def start_normal(message):
     path_studio = os.path.join(PATH_NORMAL, message['ip'])
-    print(termcolor.colored('start_normal ...' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_normal ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
     run_command(command, path_studio)
 
 
 def start_normal_force(message):
     path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
-    print(termcolor.colored('start_normal_force ...' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
     run_command(command, path_studio)
 
 
 def start_paid(message):
     path_studio = os.path.join(PATH_PAID, message['ip'])
-    print(termcolor.colored('start_paid ...' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_paid ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
     run_command(command, path_studio)
 
 
 def start_paid_force(message):
     path_studio = os.path.join(PATH_PAID_FORCE, message['ip'])
-    print(termcolor.colored('start_paid_force ...' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_paid_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
     run_command(command, path_studio)
 
@@ -103,20 +102,19 @@ def get_size(start_path):
             for f in filenames:
                 fp = os.path.join(dirpath, f)
                 # skip if it is symbolic link
-                if not os.path.islink(fp):
+                if not os.path.islink(fp) and f != 'done':
                     total_size += os.path.getsize(fp)
+        if total_size < 1024:
+            size = str(round(total_size)) + ' Byte'
+        elif total_size < 1024 ^ 2:
+            size = str(round(total_size / 1024, 1)) + ' KB'
+        elif total_size < 1024 * 1024 * 1024:
+            size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
+        else:
+            size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
+        return size
     except:
-        print(termcolor.colored('error calculating size', 'red', attrs=['reverse']), flush=True)
-
-    if total_size < 1024:
-        size = str(round(total_size)) + ' Byte'
-    elif total_size < 1024 ^ 2:
-        size = str(round(total_size / 1024, 1)) + ' KB'
-    elif total_size < 1024 * 1024 * 1024:
-        size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
-    else:
-        size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
-    return size
+        return 'error calculating size'
 
 
 if __name__ == '__main__':
