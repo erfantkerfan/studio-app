@@ -118,6 +118,7 @@ def get_size(start_path):
 
 
 if __name__ == '__main__':
+    load_dotenv()
     PATH_RSYNC = '/usr/local/bin/rsync'
     PATH_UPLOAD = '/home/film/upload'
     PATH_NORMAL = '/home/film/upload/normal'
