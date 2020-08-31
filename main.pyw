@@ -452,6 +452,11 @@ class Main(object):
         ssh.connect(host, username='film', password=PASSWORD)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
 
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
+        count_channel = connection.channel()
+        q = count_channel.queue_declare(queue='studio-' + tag)
+        count = q.method.message_count
+        print(count)
         try:
             self.log_win.destroy()
         except:
@@ -464,10 +469,12 @@ class Main(object):
         buttons_frame.grid(row=0, column=0, sticky=tk.W + tk.E)
 
         if tag == 'app':
-            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'app'), text='Refresh')
+            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'app'),
+                                  text='Refresh ---> ' + str(count) + ' in queue')
             btn_Image.grid(row=0, column=0, padx=10, pady=10)
         elif tag == 'upload':
-            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'upload'), text='Refresh')
+            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'upload'),
+                                  text='Refresh ---> ' + str(count) + ' in queue')
             btn_Image.grid(row=0, column=0, padx=10, pady=10)
 
         # Group1 Frame ----------------------------------------------------
