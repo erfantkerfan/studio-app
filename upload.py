@@ -75,7 +75,7 @@ def digest(ch, method, properties, body):
         print(termcolor.colored('Unknown tag context ↑↑↑', 'red', attrs=['reverse']), flush=True)
     end = time.time()
     print(
-        termcolor.colored('Done in ' + str(time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))) + ' seconds ',
+        termcolor.colored('Done in ' + str(time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))),
                           'green', attrs=['reverse']), flush=True)
 
 
