@@ -38,21 +38,22 @@
     var pageInit = function () {
 
         let items = [
-            {
-                title: 'Studio-1',
-                path: '192.168.0.10'
+			{
+                title: 'Studio-2',
+                path: 'file://///192.168.0.20/C/studio-app/monitor'
             },
             {
-                title: 'Studio-2',
-                path: '192.168.0.20'
+                title: 'Studio-1',
+                path: 'file://///192.168.0.10/C/studio-app/monitor'
+            },
+            
+            {
+                title: 'Arshia',
+                path: 'file://///192.168.0.55/C/studio-app/monitor'
             },
             {
                 title: 'Studio-3',
-                path: '192.168.0.30'
-            },
-            {
-                title: 'Arshia',
-                path: 'monitor'
+                path: 'file://///192.168.0.30/C/studio-app/monitor'
             }
         ];
 
@@ -73,7 +74,7 @@
                         $(this).attr('src', srcc + "?v=" + new Date().getTime());
                     }
                 });
-            }, 100);
+            }, 1000);
         }
 
         function clearmonitor() {
