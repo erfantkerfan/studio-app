@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="shortcut icon" href="alaa.ico">
+    <link href="alaa.ico" rel="shortcut icon">
     <meta charset="utf-8">
     <title>Studio monitoring</title>
-    <link rel="stylesheet" href="asset/bootstrap-4.0.0/css/bootstrap.min.css">
+    <link href="asset/bootstrap-4.0.0/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .monitor .studio {
             border: solid 5px #ffc107;
             border-radius: 6px;
         }
+
         .monitor .studio img {
             width: 100%;
         }
+
         .monitor .studio .studio-title,
         .watch .watch-title {
             text-align: center;
             font-size: 45px;
             font-width: bold;
+        }
+
+        .saveImage {
+            margin: 5px;
         }
     </style>
 </head>
@@ -28,17 +34,18 @@
             <div class="monitor row"></div>
             <div class="watch">
                 <div class="watch-title"></div>
-                <img src="" alt="Poker monitor" style="width: 100%">
+                <img alt="Poker monitor" src="" style="width: 100%">
             </div>
         </div>
     </div>
 </div>
 <script src="asset/jquery/jquery-1.12.4.min.js"></script>
 <script>
+
     var pageInit = function () {
 
         let items = [
-			{
+            {
                 title: 'Studio-2',
                 path: 'file://///192.168.0.20/C/studio-app/monitor'
             },
@@ -46,7 +53,7 @@
                 title: 'Studio-1',
                 path: 'file://///192.168.0.10/C/studio-app/monitor'
             },
-            
+
             {
                 title: 'Arshia',
                 path: 'file://///192.168.0.55/C/studio-app/monitor'
@@ -58,7 +65,7 @@
         ];
 
         function generateImage(item) {
-            var img = '<div class="col-md-6"><div class="studio"><div class="studio-title">'+item.title+'</div><img src="'+item.path+'.png?v='+ new Date().getTime()+'" alt="Poker monitor"></div></div>';
+            var img = '<div class="col-md-6"><div class="studio"><div class="studio-title">' + item.title + '<button class="saveImage btn btn-primary float-right">save</button></div><img src="' + item.path + '.png?v=' + new Date().getTime() + '" alt="Poker monitor"></div></div>';
             $('.monitor').append(img);
         }
 
@@ -99,6 +106,14 @@
                     $('.watch .watch-title').html('');
                 }
             });
+            $(document).on('click', '.saveImage', function () {
+                const downloadLink = document.createElement('a');
+                // document.body.appendChild(downloadLink);
+                downloadLink.href = $(this).parents('.studio').find('img').attr('src');
+                downloadLink.target = '_blank';
+                downloadLink.download = 'pic.png';
+                downloadLink.click();
+            });
         }
 
         function init() {
@@ -107,7 +122,7 @@
                 var item = items[i];
                 generateImage(item);
             }
-            setIntervals();
+            // setIntervals();
             setEvents();
         }
 
