@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="asset/icon.ico">
+    <meta charset="utf-8">
+    <title>Studio monitoring</title>
+    <link rel="stylesheet" href="asset/bootstrap-4.0.0/css/bootstrap.min.css">
+    <style>
+        .monitor .studio {
+            border: solid 5px #ffc107;
+            border-radius: 6px;
+        }
+        .monitor .studio img {
+            width: 100%;
+        }
+        .monitor .studio .studio-title,
+        .watch .watch-title {
+            text-align: center;
+            font-size: 45px;
+            font-width: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="monitor row"></div>
+            <div class="watch">
+                <div class="watch-title"></div>
+                <img src="" alt="Poker monitor" style="width: 100%">
+            </div>
+        </div>
+    </div>
+</div>
+<script src="asset/jquery/jquery-1.12.4.min.js"></script>
+<script>
+    var pageInit = function () {
+
+        let items = [
+            {
+                title: 'Studio-1',
+                path: '192.168.0.10'
+            },
+            {
+                title: 'Studio-2',
+                path: '192.168.0.20'
+            },
+            {
+                title: 'Studio-3',
+                path: '192.168.0.30'
+            },
+            {
+                title: 'Arshia',
+                path: 'monitor'
+            }
+        ];
+
+        function generateImage(item) {
+            var img = '<div class="col-md-6"><div class="studio"><div class="studio-title">'+item.title+'</div><img src="'+item.path+'.png?v='+ new Date().getTime()+'" alt="Poker monitor"></div></div>';
+            $('.monitor').append(img);
+        }
+
+        function setIntervals() {
+            setInterval(function () {
+                $('.monitor img').each(function () {
+                    var srcc = getPath($(this).attr('src'));
+                    $(this).attr('src', srcc + "?v=" + new Date().getTime());
+                });
+                $('.watch img').each(function () {
+                    var srcc = getPath($(this).attr('src'));
+                    if (srcc.length > 0) {
+                        $(this).attr('src', srcc + "?v=" + new Date().getTime());
+                    }
+                });
+            }, 100);
+        }
+
+        function clearmonitor() {
+            $('.monitor').html('');
+        }
+
+        function getPath(src) {
+            if (src.indexOf("?") === -1) {
+                return src;
+            }
+            return src.substring(0, src.indexOf("?"));
+        }
+
+        function setEvents() {
+            $(document).on('click', '.monitor .studio', function () {
+                var equalPath = getPath($('.watch img').attr('src')) === getPath($(this).find('img').attr('src'));
+                if ($('.watch img').attr('src').length === 0 || !equalPath) {
+                    $('.watch img').attr('src', $(this).find('img').attr('src'));
+                    $('.watch .watch-title').html($(this).find('.studio-title').html());
+                } else if (equalPath) {
+                    $('.watch img').attr('src', '');
+                    $('.watch .watch-title').html('');
+                }
+            });
+        }
+
+        function init() {
+            clearmonitor();
+            for (var i = 0; typeof items[i] !== 'undefined'; i++) {
+                var item = items[i];
+                generateImage(item);
+            }
+            setIntervals();
+            setEvents();
+        }
+
+        return {
+            init: init
+        }
+
+    }();
+
+    $(document).ready(function () {
+        pageInit.init();
+    });
+</script>
+</body>
+</html>
