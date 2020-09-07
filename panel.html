@@ -81,7 +81,7 @@
                         $(this).attr('src', srcc + "?v=" + new Date().getTime());
                     }
                 });
-            }, 1000);
+            }, 100);
         }
 
         function clearmonitor() {
@@ -108,8 +108,11 @@
             });
             $(document).on('click', '.saveImage', function () {
                 const downloadLink = document.createElement('a');
-                // document.body.appendChild(downloadLink);
-                downloadLink.href = $(this).parents('.studio').find('img').attr('src');
+                if ($(this).parents('.studio').length > 0) {
+                    downloadLink.href = $(this).parents('.studio').find('img').attr('src');
+                } else {
+                    downloadLink.href = $(this).parents('.watch').find('img').attr('src');
+                }
                 downloadLink.target = '_blank';
                 downloadLink.download = 'pic.png';
                 downloadLink.click();
@@ -122,7 +125,7 @@
                 var item = items[i];
                 generateImage(item);
             }
-            // setIntervals();
+            setIntervals();
             setEvents();
         }
 

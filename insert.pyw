@@ -1,17 +1,8 @@
-import logging
-import subprocess
-import time
-import datetime
+import os
 import tkinter as tk
 from tkinter import filedialog
-from tkinter import ttk
+
 from PIL import ImageTk, Image
-import requests
-import json
-import os
-import re
-import threading
-from win10toast import ToastNotifier
 
 
 class Insert(object):
