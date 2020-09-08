@@ -14,35 +14,31 @@ def start_normal(message):
     path_studio = os.path.join(PATH_NORMAL, message['ip'])
     print(termcolor.colored('start_normal ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
-    run_command(command, path_studio)
-    update_duration(path_studio, message['user_id'])
+    run_command(command, path_studio, message['user_id'])
 
 
 def start_normal_force(message):
     path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
     print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
-    run_command(command, path_studio)
-    update_duration(path_studio, message['user_id'])
+    run_command(command, path_studio, message['user_id'])
 
 
 def start_paid(message):
     path_studio = os.path.join(PATH_PAID, message['ip'])
     print(termcolor.colored('start_paid ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
-    run_command(command, path_studio)
-    update_duration(path_studio, message['user_id'])
+    run_command(command, path_studio, message['user_id'])
 
 
 def start_paid_force(message):
     path_studio = os.path.join(PATH_PAID_FORCE, message['ip'])
     print(termcolor.colored('start_paid_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
-    run_command(command, path_studio)
-    update_duration(path_studio, message['user_id'])
+    run_command(command, path_studio, message['user_id'])
 
 
-def run_command(command, path_studio):
+def run_command(command, path_studio, user_id):
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         status = process.wait()
@@ -52,6 +48,7 @@ def run_command(command, path_studio):
         status = process.wait()
         print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
     if status == 0:
+        update_duration(path_studio, user_id)
         try:
             time.sleep(1)
             shutil.rmtree(path_studio)
@@ -94,7 +91,11 @@ def update_duration(path_studio, user_id):
             duration['content'].append({"file_name": file, "set_id": os.path.basename(os.path.dirname(dirpath))})
     duration['content'] = str(duration['content']).replace('"', '').replace("'", '"')
     try:
-        response = requests.request("PUT", URL, headers=HEADERS, data=duration)
+        try:
+            response = requests.request("PUT", URL, headers=HEADERS, data=duration)
+        except:
+            time.sleep(5)
+            response = requests.request("PUT", URL, headers=HEADERS, data=duration)
         print(
             termcolor.colored('Duration updated with status ' + str(response.status_code), 'green', attrs=['reverse']),
             flush=True)
