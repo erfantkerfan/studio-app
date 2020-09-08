@@ -90,17 +90,21 @@ def update_duration(path_studio, user_id):
         for file in [a for a in filenames if a.lower().endswith('.mp4')]:
             duration['content'].append({"file_name": file, "set_id": os.path.basename(os.path.dirname(dirpath))})
     duration['content'] = str(duration['content']).replace('"', '').replace("'", '"')
-    try:
+    status_code = None
+    tries = 0
+    while status_code != 200:
         try:
             response = requests.request("PUT", URL, headers=HEADERS, data=duration)
+            status_code = response.status_code
+            print(termcolor.colored('Duration updated with status ' + str(status_code), 'green',
+                                    attrs=['reverse']), flush=True)
         except:
-            time.sleep(5)
-            response = requests.request("PUT", URL, headers=HEADERS, data=duration)
-        print(
-            termcolor.colored('Duration updated with status ' + str(response.status_code), 'green', attrs=['reverse']),
-            flush=True)
-    except:
-        print(termcolor.colored('Duration not updated', 'red', attrs=['reverse']), flush=True)
+            print(termcolor.colored('Duration not updated', 'red', attrs=['reverse']), flush=True)
+        tries += 1
+        if tries == 10:
+            print(termcolor.colored('Duration not updated in 10 tries', 'red', attrs=['reverse']), flush=True)
+            break
+        time.sleep(5)
 
 
 def listen():
