@@ -5,6 +5,7 @@ import subprocess
 import time
 
 import pika
+import requests
 import termcolor
 from dotenv import load_dotenv
 
@@ -14,6 +15,7 @@ def start_normal(message):
     print(termcolor.colored('start_normal ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
     run_command(command, path_studio)
+    update_duration(path_studio, message['user_id'])
 
 
 def start_normal_force(message):
@@ -21,6 +23,7 @@ def start_normal_force(message):
     print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
     run_command(command, path_studio)
+    update_duration(path_studio, message['user_id'])
 
 
 def start_paid(message):
@@ -28,6 +31,7 @@ def start_paid(message):
     print(termcolor.colored('start_paid ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
     run_command(command, path_studio)
+    update_duration(path_studio, message['user_id'])
 
 
 def start_paid_force(message):
@@ -35,6 +39,7 @@ def start_paid_force(message):
     print(termcolor.colored('start_paid_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
     run_command(command, path_studio)
+    update_duration(path_studio, message['user_id'])
 
 
 def run_command(command, path_studio):
@@ -77,6 +82,24 @@ def digest(ch, method, properties, body):
     print(
         termcolor.colored('Done in ' + str(time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))),
                           'green', attrs=['reverse']), flush=True)
+
+
+def update_duration(path_studio, user_id):
+    duration = {
+        'content': [],
+        'user_id': user_id
+    }
+    for dirpath, dirnames, filenames in os.walk(path_studio):
+        for file in [a for a in filenames if a.lower().endswith('.mp4')]:
+            duration['content'].append({"file_name": file, "set_id": os.path.basename(os.path.dirname(dirpath))})
+    duration['content'] = str(duration['content']).replace('"', '').replace("'", '"')
+    try:
+        response = requests.request("PUT", URL, headers=HEADERS, data=duration)
+        print(
+            termcolor.colored('Duration updated with status ' + str(response.status_code), 'green', attrs=['reverse']),
+            flush=True)
+    except:
+        print(termcolor.colored('Duration not updated', 'red', attrs=['reverse']), flush=True)
 
 
 def listen():
@@ -131,5 +154,12 @@ if __name__ == '__main__':
     load_dotenv()
     PATH_UPSTREAM_NORMAL = '/alaa_media/cdn/media'
     PATH_UPSTREAM_PAID = '/alaa_media/cdn/paid/private'
+
+    HEADERS = {
+        'Accept': 'application/json',
+        'Cookie': 'nocache=1',
+        'Accept-Encoding': 'utf-8'
+    }
+    URL = "https://alaatv.com/api/v2/c/updateDuration"
 
     listen()
