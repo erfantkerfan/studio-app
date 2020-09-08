@@ -104,7 +104,7 @@ def update_duration(path_studio, user_id):
         if tries == 10:
             print(termcolor.colored('Duration not updated in 10 tries', 'red', attrs=['reverse']), flush=True)
             break
-        time.sleep(5)
+        time.sleep(3)
 
 
 def listen():
