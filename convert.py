@@ -8,10 +8,10 @@ import pika
 import termcolor
 
 
-def start_studio(message):
+def start_convert(message):
     status = 0
     path_studio = os.path.join(PATH_CONVERT, message['ip'])
-    print(termcolor.colored('start_studio ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_convert ... ' + get_size(path_studio), 'yellow'), flush=True)
     for folder in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
         if os.path.isdir(os.path.join(path_studio, folder, PATH_HIGH)):
             if not os.path.exists(os.path.join(path_studio, folder, PATH_MID)):
@@ -144,7 +144,7 @@ def digest(ch, method, properties, body):
     message = json.loads(body)
     print(termcolor.colored(message, 'cyan'), flush=True)
     if message['tag'] == 'studio':
-        start_studio(message)
+        start_convert(message)
     elif message['tag'] == 'announce':
         start_announce(message)
     elif message['tag'] == 'axis':
@@ -161,13 +161,13 @@ def digest(ch, method, properties, body):
 
 def listen():
     host = '192.168.4.2'
-    queue_name = 'studio-app'
+    queue_name = 'studio-convert'
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
     channel = connection.channel()
     channel.queue_declare(queue=queue_name)
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(queue=queue_name, on_message_callback=digest, auto_ack=False)
-    print(termcolor.colored('studio-app started listening!', 'green'), flush=True)
+    print(termcolor.colored('studio-convert started listening!', 'green'), flush=True)
     try:
         channel.start_consuming()
     except KeyboardInterrupt:
@@ -179,7 +179,6 @@ if __name__ == '__main__':
     PATH_FFMPEG = '/home/alaa/bin/ffmpeg'
     PATH_ANNOUNCE = '/home/film/announce'
     PATH_CONVERT = '/home/film/convert'
-    PATH_AXIS = '/home/film/axis'
     PATH_RABIEA = '/home/film/rabiea'
 
     PATH_HIGH = 'HD_720p'

@@ -66,11 +66,11 @@ def attempt_login():
                 status_code = None
                 user_id = None
             else:
-                name = str(data['data']['user']['first_name']) + ' ' + str(data['data']['user']['last_name'])
                 user_id = str(data['data']['user']['id'])
         except:
-            name = "کاربر ناشناس"
             user_id = "Unknown"
+            data['data'] = {}
+            data['data']['user'] = {'id': 00000, 'first_name': 'ناشناس', 'last_name': ''}
         logging.critical("logged in user_id: " + user_id)
     return data['data']['user']
 
@@ -156,7 +156,7 @@ class Main(object):
 
         self.convert_menu = tk.Menu(self.menubar, tearoff=0)
         self.convert_menu.add_command(label='axis', command=partial(self.send_convert_command, 'axis'))
-        self.convert_menu.add_command(label='convert', command=partial(self.send_convert_command, 'studio'))
+        self.convert_menu.add_command(label='convert', command=partial(self.send_convert_command, 'convert'))
         self.convert_menu.add_command(label='announce', command=partial(self.send_convert_command, 'announce'))
         self.menubar.add_cascade(label='Studio', menu=self.convert_menu)
 
@@ -175,7 +175,8 @@ class Main(object):
         self.menubar.add_cascade(label='Upload', menu=self.upload_menu)
 
         self.log_menu = tk.Menu(self.menubar, tearoff=0)
-        self.log_menu.add_command(label='studio', command=partial(self.get_log, 'app'))
+        self.log_menu.add_command(label='studio', command=partial(self.get_log, 'convert'))
+        self.log_menu.add_command(label='axis', command=partial(self.get_log, 'axis'))
         self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
@@ -375,7 +376,9 @@ class Main(object):
                 finally:
                     return None
         host = '192.168.4.2'
-        queue_name = 'studio-app'
+        queue_name = 'studio-convert'
+        if tag in ['axis']:
+            queue_name = 'studio-axis'
         message = {
             'tag': tag,
             'ip': str(socket.gethostbyname(socket.gethostname())),
@@ -403,7 +406,7 @@ class Main(object):
     """send upload section"""
 
     def send_upload_command(self, tag):
-        password_list = ['1db0046b8b195ee7f40e37963486baf6ed774f803e32049da6956eea3abf532c']
+        password_list = ['4b9d51c427c2ec93a40c4c9b08eb1d5ac0cdc6d175e135cc03bac8ba2a5918d3']
         if tag in ['normal_force', 'paid_force']:
             password = simpledialog.askstring("Password", "Enter password:", show='*')
             if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
@@ -456,26 +459,20 @@ class Main(object):
         count_channel = connection.channel()
         q = count_channel.queue_declare(queue='studio-' + tag)
         count = q.method.message_count
-        print(count)
         try:
             self.log_win.destroy()
         except:
             pass
         self.log_win = tk.Tk()
         self.log_win.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
-        self.log_win.title('Alaa studio app log')
+        self.log_win.title('Alaa studio-app log')
 
         buttons_frame = tk.Frame(self.log_win)
         buttons_frame.grid(row=0, column=0, sticky=tk.W + tk.E)
 
-        if tag == 'app':
-            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'app'),
-                                  text='Refresh ---> ' + str(count) + ' in queue')
-            btn_Image.grid(row=0, column=0, padx=10, pady=10)
-        elif tag == 'upload':
-            btn_Image = tk.Button(buttons_frame, command=partial(self.get_log, 'upload'),
-                                  text='Refresh ---> ' + str(count) + ' in queue')
-            btn_Image.grid(row=0, column=0, padx=10, pady=10)
+        btn_Log = tk.Button(buttons_frame, command=partial(self.get_log, str(tag)),
+                            text='Refresh ---> ' + str(count) + ' in queue', fg='red')
+        btn_Log.grid(row=0, column=0, padx=10, pady=10)
 
         # Group1 Frame ----------------------------------------------------
         self.group1 = tk.LabelFrame(self.log_win, text="Log Box", padx=5, pady=5)

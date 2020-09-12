@@ -1,0 +1,27 @@
+#sudo vim /lib/systemd/system/studio-axis.service
+#sudo systemctl daemon-reload
+#sudo systemctl enable studio-axis.service
+#sudo systemctl start studio-axis.service
+#sudo systemctl restart studio-axis.service
+#sudo systemctl status studio-axis.service
+#sudo journalctl -f --no-pager -n 1000 --output=cat -u studio-axis
+
+[Unit]
+Description=studio-axis Service
+After=multi-user.target
+Conflicts=getty@tty1.service
+StartLimitBurst=1000000000
+StartLimitIntervalSec=1000000000
+
+[Service]
+Type=simple
+User=film
+ExecStart=/usr/bin/python3 -u /home/film/studio-app/axis.py
+StandardInput=tty-force
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=studio-axis
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

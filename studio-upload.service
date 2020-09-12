@@ -7,7 +7,7 @@
 #sudo journalctl -f --no-pager -n 1000 --output=cat -u studio-upload
 
 [Unit]
-Description=studip-upload Service
+Description=studio-upload Service
 After=multi-user.target
 Conflicts=getty@tty1.service
 StartLimitBurst=1000000000
@@ -20,7 +20,7 @@ ExecStart=/usr/bin/python3 -u /home/film/studio-app/upload.py
 StandardInput=tty-force
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=studip-app
+SyslogIdentifier=studio-upload
 Restart=always
 
 [Install]
