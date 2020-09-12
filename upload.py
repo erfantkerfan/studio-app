@@ -14,31 +14,32 @@ def start_normal(message):
     path_studio = os.path.join(PATH_NORMAL, message['ip'])
     print(termcolor.colored('start_normal ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
-    run_command(command, path_studio, message['user_id'])
+    status = run_command(command, path_studio, message['user_id'])
 
 
 def start_normal_force(message):
     path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
     print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
-    run_command(command, path_studio, message['user_id'])
+    status = run_command(command, path_studio, message['user_id'])
 
 
 def start_paid(message):
     path_studio = os.path.join(PATH_PAID, message['ip'])
     print(termcolor.colored('start_paid ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
-    run_command(command, path_studio, message['user_id'])
+    status = run_command(command, path_studio, message['user_id'])
 
 
 def start_paid_force(message):
     path_studio = os.path.join(PATH_PAID_FORCE, message['ip'])
     print(termcolor.colored('start_paid_force ... ' + get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
-    run_command(command, path_studio, message['user_id'])
+    status = run_command(command)
+    cleanup(status, path_studio, message['user_id'], message['tag'])
 
 
-def run_command(command, path_studio, user_id):
+def run_command(command):
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         status = process.wait()
@@ -47,13 +48,25 @@ def run_command(command, path_studio, user_id):
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         status = process.wait()
         print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
+    return status
+
+
+def cleanup(status, path_studio, user_id, type):
     if status == 0:
         update_duration(path_studio, user_id)
         try:
             time.sleep(1)
-            shutil.rmtree(path_studio)
-            os.mkdir(path_studio)
-            os.mkdir(os.path.join(path_studio, 'thumbnails'))
+            if type in ['normal', 'normal_force']:
+                shutil.rmtree(path_studio)
+                os.mkdir(path_studio)
+                os.mkdir(os.path.join(path_studio, 'thumbnails'))
+            else:
+                for path, subdirs, files in os.walk(path_studio):
+                    for name in files:
+                        try:
+                            os.remove(os.path.join(path, name))
+                        except:
+                            pass
         except:
             print(termcolor.colored('File removal failed', 'red', attrs=['reverse']), flush=True)
     else:
