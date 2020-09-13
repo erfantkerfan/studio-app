@@ -92,7 +92,7 @@ def update():
     root = tk.Tk()
     root.geometry("250x150")
     root.resizable(height=None, width=None)
-    # root.iconbitmap(default=os.path.join(os.getcwd(), '../studio-app/alaa.ico'))
+    root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
     root.protocol('WM_DELETE_WINDOW', root.iconify)
     root.title('Alaa studio app')
     title_hq = tk.Label(root, text='در حال بروزرسانی از اینترنت')
