@@ -212,7 +212,7 @@ class Main(object):
         self.menubar.add_cascade(label='Upload', menu=self.upload_menu)
 
         self.log_menu = tk.Menu(self.menubar, tearoff=0)
-        self.log_menu.add_command(label='studio', command=partial(self.get_log, 'convert'))
+        self.log_menu.add_command(label='convert', command=partial(self.get_log, 'convert'))
         self.log_menu.add_command(label='axis', command=partial(self.get_log, 'axis'))
         self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
