@@ -537,8 +537,12 @@ class Main(object):
         tk.mainloop()
 
 
-def reload():
-    os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
+def reload(updated=False):
+    if updated:
+        os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
+    else:
+        os.execv(sys.executable, ['python ' + str(__file__)])
+
 
 
 if __name__ == '__main__':
@@ -575,7 +579,7 @@ if __name__ == '__main__':
                 status = process.wait()
                 if status == 0:
                     update_text.set('✔ ✔ ✔')
-                    reload()
+                    reload(updated=True)
 
         root.quit()
         os._exit(0)
