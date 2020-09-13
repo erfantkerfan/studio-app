@@ -95,8 +95,8 @@ def update():
     root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
     # root.protocol('WM_DELETE_WINDOW', root.iconify)
     root.title('Alaa studio app')
-    title_hq = tk.Label(root, text='در حال بروزرسانی از اینترنت')
-    title_hq.pack(pady=20)
+    update_title = tk.Label(root, text='در حال بروزرسانی از اینترنت')
+    update_title.pack(pady=20)
     progress_bar = ttk.Progressbar(root, orient=tk.HORIZONTAL, length=200, mode='determinate')
     progress_bar.pack(pady=10)
     t = threading.Thread(target=progress)
@@ -538,15 +538,7 @@ if __name__ == '__main__':
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
         PASSWORD = os.getenv("PASSWORD_FILM")
         setup_logging()
-        # user = attempt_login()
-        user = {'id': 27244, 'first_name': 'عرفان', 'last_name': 'قلی زاده', 'name_slug': None, 'mobile': '09305551082',
-                'mobile_verified_at': '2020-05-30 14:15:48', 'national_code': '0019451210',
-                'photo': 'https://cdn.alaatv.com/upload/images/profile/photo_2019-12-31_21-41-25_20200530094719.jpg?w=100&h=100',
-                'province': 'تهران', 'city': 'تهران', 'address': 'تهران', 'postal_code': '1347675363', 'school': 'شریف',
-                'email': 'erfantkerfan@yahoo.com', 'bio': None, 'info': None, 'major': {'id': 1, 'name': 'ریاضی'},
-                'grade': {'id': 10, 'name': None}, 'gender': {'id': 1, 'name': 'آقا'}, 'profile_completion': 100,
-                'wallet_balance': 0, 'updated_at': '2020-07-01 18:55:29', 'created_at': '2018-02-11 11:37:49',
-                'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6InVKOXViU0JaXC9pYk1lRzR5K292NGx3PT0iLCJ2YWx1ZSI6IitObkRqUVlDeXVMckR1VkpjOFFDcjdPWGdOcVF3WWlqNnJEVHlnZ2RpMzg9IiwibWFjIjoiNGNjMzFkODAxZWUzNmFiZTY2M2I4ZjBmZGZlMjZjNGQwYTE4N2NjNTY2YjczNjBkNTUyMDU3Y2Y5N2RjZWNiOSJ9?expires=1598453854&signature=974a5bda5b682c7aa545ba9f082c91b534e9c44ca589c4f9e64e6288c46893ab'}
+        user = attempt_login()
         panel = Main(user)
     else:
         tt = threading.Thread(target=update)
@@ -557,16 +549,23 @@ if __name__ == '__main__':
         status = process.wait()
 
         if status == 0:
+            update_text = tk.StringVar()
+            update_text.set('✔')
+            update_label = tk.Label(root, textvariable=update_text, fg='green')
+            update_label.pack(pady=5)
             GIT_REMOTE = os.getenv("GIT_REMOTE")
             GIT_BRANCH = os.getenv("GIT_BRANCH")
             command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
             if status == 0:
+                update_text.set('✔ ✔')
                 command = 'pip install -r requirements.txt'
                 process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                 status = process.wait()
-                os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
+                if status == 0:
+                    update_text.set('✔ ✔ ✔')
+                    os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
 
         root.quit()
         os._exit(0)
