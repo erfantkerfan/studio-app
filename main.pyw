@@ -210,6 +210,11 @@ class Main(object):
         self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
+        self.about_menu = tk.Menu(self.menubar, tearoff=0)
+        self.about_menu.add_command(label='V ' + VERSION)
+        self.about_menu.add_command(label='update', command=reload)
+        self.menubar.add_cascade(label='About', menu=self.about_menu)
+
         self.add_voice('Quit', self.quit_window)
         self.config_menu()
 
@@ -532,7 +537,12 @@ class Main(object):
         tk.mainloop()
 
 
+def reload():
+    os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
+
+
 if __name__ == '__main__':
+    VERSION = '1.1.0'
     load_dotenv()
     DEBUG = bool(os.getenv("DEBUG"))
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
@@ -565,7 +575,7 @@ if __name__ == '__main__':
                 status = process.wait()
                 if status == 0:
                     update_text.set('✔ ✔ ✔')
-                    os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
+                    reload()
 
         root.quit()
         os._exit(0)
