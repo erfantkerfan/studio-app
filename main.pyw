@@ -557,7 +557,7 @@ if __name__ == '__main__':
         status = process.wait()
 
         if status == 0:
-            command = 'git reset --hard production/master'
+            command = 'git reset --hard origin/master'
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
             if status == 0:
