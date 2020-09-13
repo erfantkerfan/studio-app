@@ -115,7 +115,14 @@ class Login(object):
 
     def add_menu(self):
         self.menubar = tk.Menu(self.root)
+
+        self.about_menu = tk.Menu(self.menubar, tearoff=0)
+        self.about_menu.add_command(label='V ' + VERSION)
+        self.about_menu.add_command(label='update', command=reload)
+        self.menubar.add_cascade(label='About', menu=self.about_menu)
+
         self.add_voice("Quit", self.quit_window)
+
         self.config_menu()
 
     def init_window(self):
