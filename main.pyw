@@ -549,7 +549,6 @@ if __name__ == '__main__':
                 'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6InVKOXViU0JaXC9pYk1lRzR5K292NGx3PT0iLCJ2YWx1ZSI6IitObkRqUVlDeXVMckR1VkpjOFFDcjdPWGdOcVF3WWlqNnJEVHlnZ2RpMzg9IiwibWFjIjoiNGNjMzFkODAxZWUzNmFiZTY2M2I4ZjBmZGZlMjZjNGQwYTE4N2NjNTY2YjczNjBkNTUyMDU3Y2Y5N2RjZWNiOSJ9?expires=1598453854&signature=974a5bda5b682c7aa545ba9f082c91b534e9c44ca589c4f9e64e6288c46893ab'}
         panel = Main(user)
     else:
-        print('okay')
         tt = threading.Thread(target=update)
         tt.start()
 
@@ -558,11 +557,15 @@ if __name__ == '__main__':
         status = process.wait()
 
         if status == 0:
-            command = 'git reset --hard origin/master'
+            command = 'git reset --hard production/master'
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
-            os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
-            sys.exit()
+            if status == 0:
+                command = 'pip install -r requirements.txt'
+                process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
+                status = process.wait()
+                os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
+                sys.exit()
 
         root.quit()
         os._exit(0)
