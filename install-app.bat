@@ -5,7 +5,7 @@ ECHO.
 ECHO.
 set /p branch=Enter Branch name:
 ECHO ============== CLONING ==============
-git clone https://github.com/alaatv/studio-app -b %branch%
+git clone https://github.com/alaatv/studio-app -b %branch% && cd studio-app
 ECHO.
 ECHO.
 ECHO ============== INITIALIZING ==============
