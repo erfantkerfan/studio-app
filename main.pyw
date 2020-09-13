@@ -6,9 +6,11 @@ import os
 import socket
 import subprocess
 import sys
+import threading
 import time
 import tkinter as tk
 import tkinter.scrolledtext as st
+import tkinter.ttk as ttk
 from functools import partial
 from tkinter import simpledialog
 
@@ -75,6 +77,32 @@ def attempt_login():
             data['data']['user'] = {'id': 00000, 'first_name': 'ناشناس', 'last_name': ''}
         logging.critical("logged in user_id: " + user_id)
     return data['data']['user']
+
+
+def update():
+    global root
+
+    def progress():
+        while progress:
+            if progress_bar['value'] > 100:
+                progress_bar['value'] = 0
+            progress_bar['value'] += 1
+            time.sleep(0.01)
+
+    root = tk.Tk()
+    root.geometry("250x150")
+    root.resizable(height=None, width=None)
+    # root.iconbitmap(default=os.path.join(os.getcwd(), '../studio-app/alaa.ico'))
+    root.protocol('WM_DELETE_WINDOW', root.iconify)
+    root.title('Alaa studio app')
+    title_hq = tk.Label(root, text='در حال بروزرسانی از اینترنت')
+    title_hq.pack(pady=20)
+    progress_bar = ttk.Progressbar(root, orient=tk.HORIZONTAL, length=200, mode='determinate')
+    progress_bar.pack(pady=10)
+    t = threading.Thread(target=progress)
+    progress = 1
+    t.start()
+    root.mainloop()
 
 
 class Login(object):
@@ -521,6 +549,9 @@ if __name__ == '__main__':
                 'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6InVKOXViU0JaXC9pYk1lRzR5K292NGx3PT0iLCJ2YWx1ZSI6IitObkRqUVlDeXVMckR1VkpjOFFDcjdPWGdOcVF3WWlqNnJEVHlnZ2RpMzg9IiwibWFjIjoiNGNjMzFkODAxZWUzNmFiZTY2M2I4ZjBmZGZlMjZjNGQwYTE4N2NjNTY2YjczNjBkNTUyMDU3Y2Y5N2RjZWNiOSJ9?expires=1598453854&signature=974a5bda5b682c7aa545ba9f082c91b534e9c44ca589c4f9e64e6288c46893ab'}
         panel = Main(user)
     else:
+        tt = threading.Thread(target=update)
+        tt.start()
+
         command = 'git fetch --all'
         process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
         status = process.wait()
@@ -532,3 +563,5 @@ if __name__ == '__main__':
             os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
             sys.exit()
 
+        root.quit()
+        os._exit(0)
