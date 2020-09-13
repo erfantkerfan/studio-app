@@ -533,9 +533,9 @@ class Main(object):
 
 
 if __name__ == '__main__':
-    DEVELOPMENT = True
+    load_dotenv()
+    DEVELOPMENT = os.getenv("DEVELOPMENT")
     if DEVELOPMENT or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
-        load_dotenv()
         PASSWORD = os.getenv("PASSWORD_FILM")
         setup_logging()
         # user = attempt_login()
