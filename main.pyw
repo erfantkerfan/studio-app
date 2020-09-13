@@ -534,8 +534,8 @@ class Main(object):
 
 if __name__ == '__main__':
     load_dotenv()
-    DEVELOPMENT = os.getenv("DEVELOPMENT")
-    if DEVELOPMENT or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
+    DEBUG = bool(os.getenv("DEBUG"))
+    if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
         PASSWORD = os.getenv("PASSWORD_FILM")
         setup_logging()
         # user = attempt_login()
@@ -549,6 +549,7 @@ if __name__ == '__main__':
                 'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6InVKOXViU0JaXC9pYk1lRzR5K292NGx3PT0iLCJ2YWx1ZSI6IitObkRqUVlDeXVMckR1VkpjOFFDcjdPWGdOcVF3WWlqNnJEVHlnZ2RpMzg9IiwibWFjIjoiNGNjMzFkODAxZWUzNmFiZTY2M2I4ZjBmZGZlMjZjNGQwYTE4N2NjNTY2YjczNjBkNTUyMDU3Y2Y5N2RjZWNiOSJ9?expires=1598453854&signature=974a5bda5b682c7aa545ba9f082c91b534e9c44ca589c4f9e64e6288c46893ab'}
         panel = Main(user)
     else:
+        print('okay')
         tt = threading.Thread(target=update)
         tt.start()
 
