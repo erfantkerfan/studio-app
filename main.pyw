@@ -557,7 +557,9 @@ if __name__ == '__main__':
         status = process.wait()
 
         if status == 0:
-            command = 'git reset --hard origin/master'
+            GIT_REMOTE = os.getenv("GIT_REMOTE")
+            GIT_BRANCH = os.getenv("GIT_BRANCH")
+            command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
             if status == 0:
