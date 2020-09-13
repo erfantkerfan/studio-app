@@ -562,10 +562,9 @@ if __name__ == '__main__':
             status = process.wait()
             if status == 0:
                 command = 'pip install -r requirements.txt'
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                 status = process.wait()
                 os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
-                sys.exit()
 
         root.quit()
         os._exit(0)
