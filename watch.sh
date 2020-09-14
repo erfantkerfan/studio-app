@@ -1,5 +1,6 @@
 #!/bin/bash
 shopt -s extglob
+trap 'kill $(jobs -p)' EXIT
 if [ $# -eq 0 ]
 then
         array=( axis convert upload )
