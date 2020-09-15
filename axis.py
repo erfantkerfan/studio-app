@@ -42,7 +42,7 @@ def get_size(start_path):
             for f in filenames:
                 fp = os.path.join(dirpath, f)
                 # skip if it is symbolic link
-                if not os.path.islink(fp) and f != 'done':
+                if not os.path.islink(fp) and 'done' not in dirpath:
                     total_size += os.path.getsize(fp)
         if total_size < 1024:
             size = str(round(total_size)) + ' Byte'
