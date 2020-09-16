@@ -553,7 +553,7 @@ def reload(updated=False):
 
 
 if __name__ == '__main__':
-    VERSION = '1.1.0'
+    VERSION = '1.1.1'
     load_dotenv()
     DEBUG = bool(os.getenv("DEBUG"))
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
