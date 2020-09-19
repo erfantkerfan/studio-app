@@ -2,14 +2,27 @@ import json
 import os
 import shutil
 import subprocess
+import threading
 import time
+from threading import Thread
 
 import pika
 import termcolor
 
 
+def single_convert(command):
+    global status
+    process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
+                               shell=True)
+    temp = process.wait()
+    status = temp + status
+    return None
+
+
 def start_convert(message):
+    global status
     status = 0
+    threads = []
     path_studio = os.path.join(PATH_CONVERT, message['ip'])
     print(termcolor.colored('start_convert ... ' + get_size(path_studio), 'yellow'), flush=True)
     for folder in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
@@ -26,11 +39,19 @@ def start_convert(message):
                         out_mid = os.path.join(path_studio, folder, PATH_MID, file)
                         out_low = os.path.join(path_studio, folder, PATH_LOW, file)
                         command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mid + '\" -threads 15 -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_low + '\" -threads 7'
-                        process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
-                                                   shell=True)
-                        status = process.wait() + status
+                        while threading.activeCount() >= SIMULTANEOUS_THREADS:
+                            pass
+                            time.sleep(1)
+                        threads = [t for t in threads if t.is_alive()]
+                        threads.append(Thread(name='t: ' + str(in_high), target=single_convert, args=(command,)))
+                        threads[-1].start()
+
                 except:
                     print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
+
+            while any([t.is_alive for t in threads]):
+                threads = [t for t in threads if t.is_alive()]
+
             if os.path.exists(os.path.join(path_studio, 'done', folder)):
                 shutil.rmtree(os.path.join(path_studio, 'done', folder))
             shutil.move(os.path.join(path_studio, folder), os.path.join(path_studio, 'done', folder))
@@ -155,5 +176,7 @@ if __name__ == '__main__':
     PATH_HIGH = 'HD_720p'
     PATH_MID = 'hq'
     PATH_LOW = '240p'
+
+    SIMULTANEOUS_THREADS = 5
 
     listen()
