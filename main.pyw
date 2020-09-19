@@ -21,7 +21,7 @@ import requests
 from dotenv import load_dotenv
 from win10toast import ToastNotifier
 
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 
 
 def parse_seconds(t):
@@ -110,7 +110,6 @@ def update():
 
 class Login(object):
     def __init__(self):
-        self.chnagelog_url = 'https://github.com/alaatv/studio-app/blob/master/CHANGELOG.md'
         self.root = tk.Tk()
         self.add_menu()
         self.init_window()
@@ -122,8 +121,8 @@ class Login(object):
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
-        self.about_menu.add_command(label='V ' + VERSION)
-        self.about_menu.add_command(label='CHANGELOG', command=partial(webbrowser.open, self.chnagelog_url, new=1))
+        chnagelog_url = 'https://github.com/alaatv/studio-app/blob/master/CHANGELOG.md'
+        self.about_menu.add_command(label='V ' + VERSION, command=partial(webbrowser.open, chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
         self.add_voice("Quit", self.quit_window)
@@ -224,8 +223,8 @@ class Main(object):
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
-        self.about_menu.add_command(label='V ' + VERSION)
-        self.about_menu.add_command(label='CHANGELOG', command=partial(webbrowser.open, self.chnagelog_url, new=1))
+        chnagelog_url = 'https://github.com/alaatv/studio-app/blob/master/CHANGELOG.md'
+        self.about_menu.add_command(label='V ' + VERSION, command=partial(webbrowser.open, chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
         self.add_voice('Quit', self.quit_window)
