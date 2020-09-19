@@ -110,6 +110,7 @@ def update():
 
 class Login(object):
     def __init__(self):
+        self.chnagelog_url = 'https://github.com/alaatv/studio-app/blob/master/CHANGELOG.md'
         self.root = tk.Tk()
         self.add_menu()
         self.init_window()
@@ -120,8 +121,9 @@ class Login(object):
         self.menubar = tk.Menu(self.root)
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
-        self.about_menu.add_command(label='V ' + VERSION)
         self.about_menu.add_command(label='update', command=reload)
+        self.about_menu.add_command(label='V ' + VERSION)
+        self.about_menu.add_command(label='CHANGELOG', command=partial(webbrowser.open, self.chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
         self.add_voice("Quit", self.quit_window)
@@ -223,8 +225,7 @@ class Main(object):
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
         self.about_menu.add_command(label='V ' + VERSION)
-        chnagelog_url = 'https://github.com/alaatv/studio-app/blob/studio/CHANGELOG.md'
-        self.about_menu.add_command(label='CHANGELOG', command=partial(webbrowser.open, chnagelog_url, new=1))
+        self.about_menu.add_command(label='CHANGELOG', command=partial(webbrowser.open, self.chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
         self.add_voice('Quit', self.quit_window)
