@@ -11,6 +11,7 @@ import time
 import tkinter as tk
 import tkinter.scrolledtext as st
 import tkinter.ttk as ttk
+import webbrowser
 from functools import partial
 from tkinter import simpledialog
 
@@ -19,6 +20,8 @@ import pika
 import requests
 from dotenv import load_dotenv
 from win10toast import ToastNotifier
+
+VERSION = '1.2.0'
 
 
 def parse_seconds(t):
@@ -218,8 +221,10 @@ class Main(object):
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
-        self.about_menu.add_command(label='V ' + VERSION)
         self.about_menu.add_command(label='update', command=reload)
+        self.about_menu.add_command(label='V ' + VERSION)
+        chnagelog_url = 'https://github.com/alaatv/studio-app/blob/studio/CHANGELOG.md'
+        self.about_menu.add_command(label='CHANGELOG', command=partial(webbrowser.open, chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
         self.add_voice('Quit', self.quit_window)
@@ -551,9 +556,7 @@ def reload(updated=False):
         os.execv(sys.executable, ['python ' + str(__file__)])
 
 
-
 if __name__ == '__main__':
-    VERSION = '1.1.1'
     load_dotenv()
     DEBUG = bool(os.getenv("DEBUG"))
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):

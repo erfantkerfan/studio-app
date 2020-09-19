@@ -1,11 +1,3 @@
-#sudo vim /lib/systemd/system/studio-upload.service
-#sudo systemctl daemon-reload
-#sudo systemctl enable studio-upload.service
-#sudo systemctl start studio-upload.service
-#sudo systemctl restart studio-upload.service
-#sudo systemctl status studio-upload.service
-#sudo journalctl -f --no-pager -n 1000 --output=cat -u studio-upload
-
 [Unit]
 Description=studio-upload Service
 After=multi-user.target
