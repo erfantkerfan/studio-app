@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import shutil
@@ -198,7 +199,8 @@ if __name__ == '__main__':
     PATH_PAID_FORCE = '/home/film/upload/paid_force'
 
     SFTP = 'sftp@cdn.alaatv.com:'
-    PASSWORD = os.getenv("PASSWORD_SFTP")
+    PASSWORD = base64.b64decode(os.getenv("PASSWORD_SFTP").encode('ascii')).decode('ascii')
+    # GENERATED_PASSWORD = base64.b64encode('XXX'.encode('ascii')).decode('ascii')
     load_dotenv()
     PATH_UPSTREAM_NORMAL = '/alaa_media/cdn/media'
     PATH_UPSTREAM_PAID = '/alaa_media/cdn/paid/private'
