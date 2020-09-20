@@ -15,7 +15,7 @@ sudo systemctl status studio-XXX.service
 sudo journalctl -f --no-pager -n 1000 --output=cat -u studio-XXX
 ```
 
-### monitoring services log - XXX refers to service name `convert`,`axis`,`upload`,*_empty_* for watching all
+### monitoring services log - XXX refers to service name `convert`,`axis`,`upload`,` `(*_empty_*) for watching all
 ```
 ./watch XXX
 ```
