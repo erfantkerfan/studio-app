@@ -10,21 +10,21 @@ import termcolor
 
 def start_axis(message):
     status = 0
+    # get client folder
     path_studio = os.path.join(PATH_AXIS, message['ip'])
     print(termcolor.colored('start_axis ... ' + get_size(path_studio), 'yellow'), flush=True)
     for file in [item.name for item in os.scandir(path_studio) if item.is_file()]:
         try:
             if file.endswith(('.mkv', '.MKV')):
-                try:
-                    mp4 = file.replace('mkv', 'mp4')
-                except:
-                    mp4 = file.replace('MKV', 'mp4')
+                # generate mp4 name
+                mp4 = file.replace('mkv', 'mp4').replace('MKV', 'mp4')
                 in_mkv = os.path.join(path_studio, file)
+                # generate mp4 absolute path
                 out_mp4 = os.path.join(path_studio, mp4)
                 command = PATH_FFMPEG + ' -y -i \"' + in_mkv + '\" -metadata title="@alaa_sanatisharif" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"' + out_mp4 + '\" -threads 23'
                 process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                 status = process.wait() + status
-
+                # remove mkv after convert
                 os.remove(in_mkv)
                 if not os.path.exists(os.path.join(PATH_AXIS, 'done')):
                     os.makedirs(os.path.join(PATH_AXIS, 'done'))
@@ -34,7 +34,7 @@ def start_axis(message):
         except:
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
 
-
+# get size for better logging (except 'done' folder)
 def get_size(start_path):
     total_size = 0
     try:
@@ -56,7 +56,8 @@ def get_size(start_path):
     except:
         return 'error calculating size'
 
-
+# start processing message and route to needed function
+# plus timing the call for better logging
 def digest(ch, method, properties, body):
     start = time.time()
     ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -71,7 +72,7 @@ def digest(ch, method, properties, body):
         termcolor.colored('Done in ' + str(time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))),
                           'green', attrs=['reverse']), flush=True)
 
-
+# start listening to rabbit-mq server
 def listen():
     host = '192.168.4.2'
     queue_name = 'studio-axis'
