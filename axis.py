@@ -21,7 +21,7 @@ def start_axis(message):
                 in_mkv = os.path.join(path_studio, file)
                 # generate mp4 absolute path
                 out_mp4 = os.path.join(path_studio, mp4)
-                command = PATH_FFMPEG + ' -y -i \"' + in_mkv + '\" -metadata title="@alaa_sanatisharif" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"' + out_mp4 + '\" -threads 23'
+                command = PATH_FFMPEG + ' -y -i \"' + in_mkv + '\" -metadata title="@alaa_sanatisharif" -preset ultrafast -vcodec copy -r 50 -vsync 1 -async 1 \"' + out_mp4 + '\"'
                 process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                 status = process.wait() + status
                 # remove mkv after convert
