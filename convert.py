@@ -9,11 +9,13 @@ from threading import Thread
 import pika
 import termcolor
 
+# number of files handled by ffmepg in convert method
+SIMULTANEOUS_THREADS = 5
+
 
 def single_convert(command):
     global status
-    process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
-                               shell=True)
+    process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
     temp = process.wait()
     status = temp + status
     return None
@@ -23,10 +25,12 @@ def start_convert(message):
     global status
     status = 0
     threads = []
+    # get client folder
     path_studio = os.path.join(PATH_CONVERT, message['ip'])
     print(termcolor.colored('start_convert ... ' + get_size(path_studio), 'yellow'), flush=True)
     for folder in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
         if os.path.isdir(os.path.join(path_studio, folder, PATH_HIGH)):
+            # create output folders
             if not os.path.exists(os.path.join(path_studio, folder, PATH_MID)):
                 os.makedirs(os.path.join(path_studio, folder, PATH_MID))
             if not os.path.exists(os.path.join(path_studio, folder, PATH_LOW)):
@@ -35,23 +39,29 @@ def start_convert(message):
                          item.is_file()]:
                 try:
                     if file.endswith(('.mp4', '.MP4')):
+                        # generate output file names
                         in_high = os.path.join(path_studio, folder, PATH_HIGH, file)
                         out_mid = os.path.join(path_studio, folder, PATH_MID, file)
                         out_low = os.path.join(path_studio, folder, PATH_LOW, file)
-                        command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mid + '\" -threads 15 -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_low + '\" -threads 7'
-                        while threading.activeCount() >= SIMULTANEOUS_THREADS:
+                        command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mid + '\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_low + '\"'
+                        # wait for available threads
+                        while threading.activeCount() > SIMULTANEOUS_THREADS:
                             pass
                             time.sleep(1)
+                        # remove finished stacks
                         threads = [t for t in threads if t.is_alive()]
+                        # push thread to stack
                         threads.append(Thread(name='t: ' + str(in_high), target=single_convert, args=(command,)))
                         threads[-1].start()
 
                 except:
                     print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
 
+            # wait for all threads to finish
             while any([t.is_alive for t in threads]):
                 threads = [t for t in threads if t.is_alive()]
 
+            # ToDo: non destructive move for this part
             if os.path.exists(os.path.join(path_studio, 'done', folder)):
                 shutil.rmtree(os.path.join(path_studio, 'done', folder))
             shutil.move(os.path.join(path_studio, folder), os.path.join(path_studio, 'done', folder))
@@ -73,12 +83,14 @@ def start_announce(message):
                         in_high = os.path.join(PATH_ANNOUNCE, folder, PATH_HIGH, file)
                         out_mid = os.path.join(PATH_ANNOUNCE, folder, PATH_MID, file)
                         out_low = os.path.join(PATH_ANNOUNCE, folder, PATH_LOW, file)
-                        command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 854x854 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_mid + '\" -threads 15 -sws_flags lanczos -s 426x426 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 50k -movflags +faststart \"' + out_low + '\"  -threads 7'
+                        command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 854x854 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_mid + '\" -sws_flags lanczos -s 426x426 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 50k -movflags +faststart \"' + out_low + '\"'
                         process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
                                                    shell=True)
                         status = process.wait() + status
                 except:
                     print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
+
+            # ToDo: non destructive move for this part
             if os.path.exists(os.path.join(PATH_ANNOUNCE, 'done', folder)):
                 shutil.rmtree(os.path.join(PATH_ANNOUNCE, 'done', folder))
             shutil.move(os.path.join(PATH_ANNOUNCE, folder), os.path.join(PATH_ANNOUNCE, 'done', folder))
@@ -92,15 +104,16 @@ def start_rabiea(message):
             if file.endswith(('.mp4', '.MP4')):
                 if not os.path.exists(os.path.join(PATH_RABIEA, 'done')):
                     os.makedirs(os.path.join(PATH_RABIEA, 'done'))
+                # generate input and output filename
                 in_mp4 = os.path.join(PATH_RABIEA, file)
                 out_mp4 = os.path.join(PATH_RABIEA, 'done', file)
-
+                # generate different command types
                 if message['tag'] == 'rabiea':
-                    command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 1280x720 -profile:v baseline -level 3.0 -vcodec libx264 -crf 19 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 128k -movflags +faststart \"' + out_mp4 + '\" -threads 23'
+                    command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 1280x720 -profile:v baseline -level 3.0 -vcodec libx264 -crf 19 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 128k -movflags +faststart \"' + out_mp4 + '\"'
                 elif message['tag'] == 'rabiea-480':
-                    command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 128k -movflags +faststart \"' + out_mp4 + '\" -threads 23'
+                    command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 128k -movflags +faststart \"' + out_mp4 + '\"'
                 elif message['tag'] == 'rabiea-sizeless':
-                    command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mp4 + '\" -threads 23'
+                    command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mp4 + '\"'
 
                 process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
                 status = process.wait() + status
@@ -110,6 +123,7 @@ def start_rabiea(message):
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
 
 
+# get size for better logging (except 'done' folder)
 def get_size(start_path):
     total_size = 0
     try:
@@ -132,6 +146,8 @@ def get_size(start_path):
         return 'error calculating size'
 
 
+# start processing message and route to needed function
+# plus timing the call for better logging
 def digest(ch, method, properties, body):
     start = time.time()
     ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -151,6 +167,7 @@ def digest(ch, method, properties, body):
                           'green', attrs=['reverse']), flush=True)
 
 
+# start listening to rabbit-mq server
 def listen():
     host = '192.168.4.2'
     queue_name = 'studio-convert'
@@ -176,7 +193,5 @@ if __name__ == '__main__':
     PATH_HIGH = 'HD_720p'
     PATH_MID = 'hq'
     PATH_LOW = '240p'
-
-    SIMULTANEOUS_THREADS = 5
 
     listen()
