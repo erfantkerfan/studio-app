@@ -34,6 +34,7 @@ def start_axis(message):
         except:
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
 
+
 # get size for better logging (except 'done' folder)
 def get_size(start_path):
     total_size = 0
@@ -56,6 +57,7 @@ def get_size(start_path):
     except:
         return 'error calculating size'
 
+
 # start processing message and route to needed function
 # plus timing the call for better logging
 def digest(ch, method, properties, body):
@@ -71,6 +73,7 @@ def digest(ch, method, properties, body):
     print(
         termcolor.colored('Done in ' + str(time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))),
                           'green', attrs=['reverse']), flush=True)
+
 
 # start listening to rabbit-mq server
 def listen():
