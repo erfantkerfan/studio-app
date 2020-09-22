@@ -78,6 +78,8 @@ def cleanup(status, path_studio, user_id, type):
                                 attrs=['reverse']), flush=True)
 
 
+# start processing message and route to needed function
+# plus timing the call for better logging
 def digest(ch, method, properties, body):
     start = time.time()
     ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -99,6 +101,7 @@ def digest(ch, method, properties, body):
                           'green', attrs=['reverse']), flush=True)
 
 
+# update file/phamphlet duration via api call
 def update_duration(path_studio, user_id):
     duration = {
         'content': [],
@@ -125,22 +128,7 @@ def update_duration(path_studio, user_id):
         time.sleep(3)
 
 
-def listen():
-    host = '192.168.4.2'
-    queue_name = 'studio-upload'
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
-    channel = connection.channel()
-    channel.queue_declare(queue=queue_name)
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=queue_name, on_message_callback=digest, auto_ack=False)
-    print(termcolor.colored('studio-upload started listening! ', 'green'), flush=True)
-    try:
-        channel.start_consuming()
-    except KeyboardInterrupt:
-        channel.stop_consuming()
-    connection.close()
-
-
+# get size for better logging (except 'done' folder)
 def get_size(start_path):
     total_size = 0
     try:
@@ -187,6 +175,23 @@ def get_rsync_error(code):
         35: ' -> Timeout waiting for daemon connection',
     }
     return errors.get(code, '')
+
+
+# start listening to rabbit-mq server
+def listen():
+    host = '192.168.4.2'
+    queue_name = 'studio-upload'
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
+    channel = connection.channel()
+    channel.queue_declare(queue=queue_name)
+    channel.basic_qos(prefetch_count=1)
+    channel.basic_consume(queue=queue_name, on_message_callback=digest, auto_ack=False)
+    print(termcolor.colored('studio-upload started listening! ', 'green'), flush=True)
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        channel.stop_consuming()
+    connection.close()
 
 
 if __name__ == '__main__':
