@@ -24,12 +24,12 @@ from win10toast import ToastNotifier
 VERSION = '1.2.1'
 
 
-def parse_seconds(t):
-    if t in ['', ' ', None]:
-        return 0
-    tx = time.strptime(t, '%H:%M:%S')
-    seconds = datetime.timedelta(hours=tx.tm_hour, minutes=tx.tm_min, seconds=tx.tm_sec).total_seconds()
-    return seconds
+# def parse_seconds(t):
+#     if t in ['', ' ', None]:
+#         return 0
+#     tx = time.strptime(t, '%H:%M:%S')
+#     seconds = datetime.timedelta(hours=tx.tm_hour, minutes=tx.tm_min, seconds=tx.tm_sec).total_seconds()
+#     return seconds
 
 
 def setup_logging():
@@ -494,6 +494,8 @@ class Main(object):
         except:
             pass
 
+    """show log section"""
+
     def get_log(self, tag):
         host = '192.168.4.2'
         command = 'journalctl --no-pager -n 20 --output=cat -u studio-' + str(tag)
@@ -549,6 +551,7 @@ class Main(object):
         tk.mainloop()
 
 
+# reload the app with needed sys arguments
 def reload(updated=False):
     if updated:
         os.execv(sys.executable, ['python ' + str(__file__) + ' updated'])
@@ -557,12 +560,14 @@ def reload(updated=False):
 
 
 if __name__ == '__main__':
+    # try to update app from github
     load_dotenv()
     DEBUG = bool(os.getenv("DEBUG"))
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
         PASSWORD = os.getenv("PASSWORD_FILM")
         setup_logging()
         user = attempt_login()
+        # run main app
         panel = Main(user)
     else:
         tt = threading.Thread(target=update)
