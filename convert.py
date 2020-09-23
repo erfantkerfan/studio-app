@@ -28,21 +28,20 @@ def start_convert(message):
     # get client folder
     path_studio = os.path.join(PATH_CONVERT, message['ip'])
     print(termcolor.colored('start_convert ... ' + get_size(path_studio), 'yellow'), flush=True)
-    for folder in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
-        if os.path.isdir(os.path.join(path_studio, folder, PATH_HIGH)):
+    for set in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
+        if os.path.isdir(os.path.join(path_studio, set, PATH_HIGH)):
             # create output folders
-            if not os.path.exists(os.path.join(path_studio, folder, PATH_MID)):
-                os.makedirs(os.path.join(path_studio, folder, PATH_MID))
-            if not os.path.exists(os.path.join(path_studio, folder, PATH_LOW)):
-                os.makedirs(os.path.join(path_studio, folder, PATH_LOW))
-            for file in [item.name for item in os.scandir(os.path.join(path_studio, folder, PATH_HIGH)) if
-                         item.is_file()]:
+            if not os.path.exists(os.path.join(path_studio, set, PATH_MID)):
+                os.makedirs(os.path.join(path_studio, set, PATH_MID))
+            if not os.path.exists(os.path.join(path_studio, set, PATH_LOW)):
+                os.makedirs(os.path.join(path_studio, set, PATH_LOW))
+            for file in [item.name for item in os.scandir(os.path.join(path_studio, set, PATH_HIGH)) if item.is_file()]:
                 try:
                     if file.endswith(('.mp4', '.MP4')):
                         # generate output file names
-                        in_high = os.path.join(path_studio, folder, PATH_HIGH, file)
-                        out_mid = os.path.join(path_studio, folder, PATH_MID, file)
-                        out_low = os.path.join(path_studio, folder, PATH_LOW, file)
+                        in_high = os.path.join(path_studio, set, PATH_HIGH, file)
+                        out_mid = os.path.join(path_studio, set, PATH_MID, file)
+                        out_low = os.path.join(path_studio, set, PATH_LOW, file)
                         command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos  -s 854x480 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 96k -movflags +faststart \"' + out_mid + '\" -sws_flags lanczos -s 426x240 -profile:v baseline -level 3.0 -vcodec libx264 -crf 27 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_low + '\"'
                         # wait for available threads
                         while threading.activeCount() > SIMULTANEOUS_THREADS:
@@ -61,28 +60,25 @@ def start_convert(message):
             while any([t.is_alive for t in threads]):
                 threads = [t for t in threads if t.is_alive()]
 
-            # ToDo: non destructive move for this part
-            if os.path.exists(os.path.join(path_studio, 'done', folder)):
-                shutil.rmtree(os.path.join(path_studio, 'done', folder))
-            shutil.move(os.path.join(path_studio, folder), os.path.join(path_studio, 'done', folder))
+            nondestructive_move(os.path.join(path_studio, set), os.path.join(path_studio, 'done'), set)
 
 
 def start_announce(message):
     print(termcolor.colored('start_announce ... ' + get_size(PATH_ANNOUNCE), 'yellow'), flush=True)
     status = 0
-    for folder in [item.name for item in os.scandir(PATH_ANNOUNCE) if item.is_dir()]:
-        if os.path.isdir(os.path.join(PATH_ANNOUNCE, folder, PATH_HIGH)):
-            if not os.path.exists(os.path.join(PATH_ANNOUNCE, folder, PATH_MID)):
-                os.makedirs(os.path.join(PATH_ANNOUNCE, folder, PATH_MID))
-            if not os.path.exists(os.path.join(PATH_ANNOUNCE, folder, PATH_LOW)):
-                os.makedirs(os.path.join(PATH_ANNOUNCE, folder, PATH_LOW))
-            for file in [item.name for item in os.scandir(os.path.join(PATH_ANNOUNCE, folder, PATH_HIGH)) if
+    for set in [item.name for item in os.scandir(PATH_ANNOUNCE) if item.is_dir()]:
+        if os.path.isdir(os.path.join(PATH_ANNOUNCE, set, PATH_HIGH)):
+            if not os.path.exists(os.path.join(PATH_ANNOUNCE, set, PATH_MID)):
+                os.makedirs(os.path.join(PATH_ANNOUNCE, set, PATH_MID))
+            if not os.path.exists(os.path.join(PATH_ANNOUNCE, set, PATH_LOW)):
+                os.makedirs(os.path.join(PATH_ANNOUNCE, set, PATH_LOW))
+            for file in [item.name for item in os.scandir(os.path.join(PATH_ANNOUNCE, set, PATH_HIGH)) if
                          item.is_file()]:
                 try:
                     if file.endswith(('.mp4', '.MP4')):
-                        in_high = os.path.join(PATH_ANNOUNCE, folder, PATH_HIGH, file)
-                        out_mid = os.path.join(PATH_ANNOUNCE, folder, PATH_MID, file)
-                        out_low = os.path.join(PATH_ANNOUNCE, folder, PATH_LOW, file)
+                        in_high = os.path.join(PATH_ANNOUNCE, set, PATH_HIGH, file)
+                        out_mid = os.path.join(PATH_ANNOUNCE, set, PATH_MID, file)
+                        out_low = os.path.join(PATH_ANNOUNCE, set, PATH_LOW, file)
                         command = PATH_FFMPEG + ' -y -i \"' + in_high + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 854x854 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 64k -movflags +faststart \"' + out_mid + '\" -sws_flags lanczos -s 426x426 -profile:v baseline -level 3.0 -vcodec libx264 -crf 28 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 50k -movflags +faststart \"' + out_low + '\"'
                         process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
                                                    shell=True)
@@ -90,10 +86,7 @@ def start_announce(message):
                 except:
                     print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
 
-            # ToDo: non destructive move for this part
-            if os.path.exists(os.path.join(PATH_ANNOUNCE, 'done', folder)):
-                shutil.rmtree(os.path.join(PATH_ANNOUNCE, 'done', folder))
-            shutil.move(os.path.join(PATH_ANNOUNCE, folder), os.path.join(PATH_ANNOUNCE, 'done', folder))
+            nondestructive_move(os.path.join(PATH_ANNOUNCE, set), os.path.join(PATH_ANNOUNCE, 'done'), set)
 
 
 def start_rabiea(message):
@@ -121,6 +114,14 @@ def start_rabiea(message):
                     os.remove(os.path.join(PATH_RABIEA, file))
         except:
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
+
+
+# move folder safe (add 'new' if exists)
+def nondestructive_move(source, destination, set):
+    if not os.path.exists(os.path.join(destination, set)):
+        shutil.move(source, os.path.join(destination, set))
+    else:
+        nondestructive_move(source, destination, set + ' new')
 
 
 # get size for better logging (except 'done' folder)
