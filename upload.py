@@ -44,14 +44,13 @@ def start_paid_force(message):
 
 
 def run_command(command):
-    try:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        status = process.wait()
-    except:
-        time.sleep(5)
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        status = process.wait()
-        print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
+    status = None
+    while status in [None, 255]:
+        try:
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            status = process.wait()
+        except:
+            print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
     return status
 
 
@@ -173,6 +172,7 @@ def get_rsync_error(code):
         25: ' -> The --max-delete limit stopped deletions',
         30: ' -> Timeout in data send/receive',
         35: ' -> Timeout waiting for daemon connection',
+        255: ' -> server did not accept handshake',
     }
     return errors.get(code, '')
 
