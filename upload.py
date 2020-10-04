@@ -27,6 +27,7 @@ def start_normal_force(message):
     path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
     print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
 
+    print(termcolor.colored('start_webp_generation', 'green'), flush=True)
     threads = []
     for dirpath, dirnames, filenames in os.walk(path_studio):
         for file in filenames:
@@ -35,7 +36,6 @@ def start_normal_force(message):
                 continue
             while threading.activeCount() > SIMULTANEOUS_THREADS:
                 pass
-            print(termcolor.colored('start_webp_generation', 'green'), flush=True)
             threads = [t for t in threads if t.is_alive()]
             threads.append(Thread(name='t: ' + str(fp), target=webp, args=(fp,)))
             threads[-1].start()
