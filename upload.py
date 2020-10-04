@@ -3,12 +3,16 @@ import json
 import os
 import shutil
 import subprocess
+import threading
 import time
+from threading import Thread
 
 import pika
 import requests
 import termcolor
 from dotenv import load_dotenv
+
+SIMULTANEOUS_THREADS = 20
 
 
 def start_normal(message):
@@ -22,6 +26,23 @@ def start_normal(message):
 def start_normal_force(message):
     path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
     print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
+
+    threads = []
+    for dirpath, dirnames, filenames in os.walk(path_studio):
+        for file in filenames:
+            fp = os.path.join(dirpath, file)
+            if os.path.islink(fp) or not fp.lower().endswith(('.jpg', '.jpeg', 'png')):
+                continue
+            while threading.activeCount() > SIMULTANEOUS_THREADS:
+                pass
+            print(termcolor.colored('start_webp_generation', 'green'), flush=True)
+            threads = [t for t in threads if t.is_alive()]
+            threads.append(Thread(name='t: ' + str(fp), target=webp, args=(fp,)))
+            threads[-1].start()
+    # stay here until all threads are finished
+    while any([t.is_alive for t in threads]):
+        threads = [t for t in threads if t.is_alive()]
+
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
     status = run_command(command)
     cleanup(status, path_studio, message['user_id'], message['tag'])
@@ -38,6 +59,23 @@ def start_paid(message):
 def start_paid_force(message):
     path_studio = os.path.join(PATH_PAID_FORCE, message['ip'])
     print(termcolor.colored('start_paid_force ... ' + get_size(path_studio), 'yellow'), flush=True)
+
+    threads = []
+    for dirpath, dirnames, filenames in os.walk(path_studio):
+        for file in filenames:
+            fp = os.path.join(dirpath, file)
+            if os.path.islink(fp) or not fp.lower().endswith(('.jpg', '.jpeg', 'png')):
+                continue
+            while threading.activeCount() > SIMULTANEOUS_THREADS:
+                pass
+            print(termcolor.colored('start_webp_generation', 'green'), flush=True)
+            threads = [t for t in threads if t.is_alive()]
+            threads.append(Thread(name='t: ' + str(fp), target=webp, args=(fp,)))
+            threads[-1].start()
+    # stay here until all threads are finished
+    while any([t.is_alive for t in threads]):
+        threads = [t for t in threads if t.is_alive()]
+
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
     status = run_command(command)
     cleanup(status, path_studio, message['user_id'], message['tag'])
@@ -125,6 +163,15 @@ def update_duration(path_studio, user_id):
             print(termcolor.colored('Duration not updated in 10 tries', 'red', attrs=['reverse']), flush=True)
             break
         time.sleep(3)
+
+
+def webp(path):
+    command = 'cwebp -quiet -mt -m 6 -q 80 -sharp_yuv -alpha_filter best -pass 10 -segments 4 -af \"' + path + '\" -o \"' + path + '.webp' + '\"'
+    try:
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+    except:
+        pass
 
 
 # get size for better logging (except 'done' folder)

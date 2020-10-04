@@ -3,6 +3,8 @@
 - production server for uploading to
 - local server for handling converting load
 - custom `ffmpeg` build for supporting `libfdk_aac` and `libx264`
+- web and sshpass installed
+- keyscan cdn.alaatv.com >> ~/.ssh/known_hosts
 ---
 ### Running services - XXX refers to service name `convert`,`axis`,`upload`
 ```bash
