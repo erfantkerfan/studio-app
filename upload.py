@@ -179,7 +179,7 @@ def get_rsync_error(code):
 
 # start listening to rabbit-mq server
 def listen():
-    host = '192.168.4.2'
+    host = '192.168.4.3'
     queue_name = 'studio-upload'
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
     channel = connection.channel()

@@ -422,7 +422,7 @@ class Main(object):
                     pass
                 finally:
                     return None
-        host = '192.168.4.2'
+        host = '192.168.4.3'
         queue_name = 'studio-convert'
         if tag in ['axis']:
             queue_name = 'studio-axis'
@@ -468,7 +468,7 @@ class Main(object):
                     pass
                 finally:
                     return None
-        host = '192.168.4.2'
+        host = '192.168.4.3'
         queue_name = 'studio-upload'
         message = {
             'tag': tag,
@@ -497,7 +497,7 @@ class Main(object):
     """show log section"""
 
     def get_log(self, tag):
-        host = '192.168.4.2'
+        host = '192.168.4.3'
         command = 'journalctl --no-pager -n 20 --output=cat -u studio-' + str(tag)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

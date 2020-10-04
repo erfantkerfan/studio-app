@@ -170,7 +170,7 @@ def digest(ch, method, properties, body):
 
 # start listening to rabbit-mq server
 def listen():
-    host = '192.168.4.2'
+    host = '192.168.4.3'
     queue_name = 'studio-convert'
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
     channel = connection.channel()
@@ -186,7 +186,7 @@ def listen():
 
 
 if __name__ == '__main__':
-    PATH_FFMPEG = '/home/alaa/bin/ffmpeg'
+    PATH_FFMPEG = '/usr/bin/ffmpeg'
     PATH_ANNOUNCE = '/home/film/announce'
     PATH_CONVERT = '/home/film/convert'
     PATH_RABIEA = '/home/film/rabiea'
