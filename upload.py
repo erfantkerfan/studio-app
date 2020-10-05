@@ -85,7 +85,7 @@ def run_command(command):
     status = None
     while status in [None, 255]:
         try:
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
         except:
             print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
@@ -168,7 +168,7 @@ def update_duration(path_studio, user_id):
 def webp(path):
     command = 'cwebp -quiet -mt -m 6 -q 80 -sharp_yuv -alpha_filter best -pass 10 -segments 4 -af \"' + path + '\" -o \"' + path + '.webp' + '\"'
     try:
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         process.wait()
     except:
         pass
