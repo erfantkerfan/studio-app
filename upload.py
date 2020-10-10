@@ -86,7 +86,8 @@ def run_command(command):
     while status in [None, 255]:
         try:
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
-            status = process.wait()
+            # wait in seconds for upload
+            status = process.wait(timeout=20 * 60)
         except:
             print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
     return status
