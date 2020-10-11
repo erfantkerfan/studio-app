@@ -26,11 +26,11 @@ def start_axis(message):
                 status = process.wait() + status
                 # remove mkv after convert
                 os.remove(in_mkv)
-                if not os.path.exists(os.path.join(PATH_AXIS, 'done')):
-                    os.makedirs(os.path.join(PATH_AXIS, 'done'))
-                if os.path.exists(os.path.join(PATH_AXIS, 'done', mp4)):
-                    os.remove(os.path.join(PATH_AXIS, 'done', mp4))
-                shutil.move(out_mp4, os.path.join(PATH_AXIS, 'done'))
+                if not os.path.exists(os.path.join(path_studio, 'done')):
+                    os.makedirs(os.path.join(path_studio, 'done'))
+                if os.path.exists(os.path.join(path_studio, 'done', mp4)):
+                    os.remove(os.path.join(path_studio, 'done', mp4))
+                shutil.move(out_mp4, os.path.join(path_studio, 'done'))
         except:
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
 
