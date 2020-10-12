@@ -12,12 +12,14 @@ import requests
 import termcolor
 from dotenv import load_dotenv
 
+import helper
+
 SIMULTANEOUS_THREADS = 20
 
 
 def start_normal(message):
     path_studio = os.path.join(PATH_NORMAL, message['ip'])
-    print(termcolor.colored('start_normal ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_normal ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
     status = run_command(command)
     cleanup(status, path_studio, message['user_id'], message['tag'])
@@ -25,7 +27,7 @@ def start_normal(message):
 
 def start_normal_force(message):
     path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
-    print(termcolor.colored('start_normal_force ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_normal_force ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
 
     print(termcolor.colored('start_webp_generation', 'green'), flush=True)
     threads = []
@@ -37,7 +39,7 @@ def start_normal_force(message):
             while threading.activeCount() > SIMULTANEOUS_THREADS:
                 pass
             threads = [t for t in threads if t.is_alive()]
-            threads.append(Thread(name='t: ' + str(fp), target=webp, args=(fp,)))
+            threads.append(Thread(name='t: ' + str(fp), target=helper.webp, args=(fp,)))
             threads[-1].start()
     # stay here until all threads are finished
     while any([t.is_alive for t in threads]):
@@ -50,7 +52,7 @@ def start_normal_force(message):
 
 def start_paid(message):
     path_studio = os.path.join(PATH_PAID, message['ip'])
-    print(termcolor.colored('start_paid ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_paid ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
     command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
     status = run_command(command)
     cleanup(status, path_studio, message['user_id'], message['tag'])
@@ -58,7 +60,7 @@ def start_paid(message):
 
 def start_paid_force(message):
     path_studio = os.path.join(PATH_PAID_FORCE, message['ip'])
-    print(termcolor.colored('start_paid_force ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_paid_force ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
 
     threads = []
     for dirpath, dirnames, filenames in os.walk(path_studio):
@@ -70,7 +72,7 @@ def start_paid_force(message):
                 pass
             print(termcolor.colored('start_webp_generation', 'green'), flush=True)
             threads = [t for t in threads if t.is_alive()]
-            threads.append(Thread(name='t: ' + str(fp), target=webp, args=(fp,)))
+            threads.append(Thread(name='t: ' + str(fp), target=helper.webp, args=(fp,)))
             threads[-1].start()
     # stay here until all threads are finished
     while any([t.is_alive for t in threads]):
@@ -112,7 +114,7 @@ def cleanup(status, path_studio, user_id, type):
         except:
             print(termcolor.colored('File removal failed', 'red', attrs=['reverse']), flush=True)
     else:
-        print(termcolor.colored('Non-zero status code: ' + str(status) + get_rsync_error(status), 'red',
+        print(termcolor.colored('Non-zero status code: ' + str(status) + helper.get_rsync_error(status), 'red',
                                 attrs=['reverse']), flush=True)
 
 
@@ -164,65 +166,6 @@ def update_duration(path_studio, user_id):
             print(termcolor.colored('Duration not updated in 10 tries', 'red', attrs=['reverse']), flush=True)
             break
         time.sleep(3)
-
-
-def webp(path):
-    command = 'cwebp -quiet -mt -m 6 -q 80 -sharp_yuv -alpha_filter best -pass 10 -segments 4 -af \"' + path + '\" -o \"' + path + '.webp' + '\"'
-    try:
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-        process.wait()
-    except:
-        pass
-
-
-# get size for better logging (except 'done' folder)
-def get_size(start_path):
-    total_size = 0
-    try:
-        for dirpath, dirnames, filenames in os.walk(start_path):
-            for f in filenames:
-                fp = os.path.join(dirpath, f)
-                # skip if it is symbolic link
-                if not os.path.islink(fp) and 'done' not in dirpath:
-                    total_size += os.path.getsize(fp)
-        if total_size < 1024:
-            size = str(round(total_size)) + ' Byte'
-        elif total_size < 1024 ^ 2:
-            size = str(round(total_size / 1024, 1)) + ' KB'
-        elif total_size < 1024 * 1024 * 1024:
-            size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
-        else:
-            size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
-        return size
-    except:
-        return 'error calculating size'
-
-
-def get_rsync_error(code):
-    errors = {
-        0: ' -> Success',
-        1: ' -> Syntax or usage error',
-        2: ' -> Protocol incompatibility',
-        3: ' -> Errors selecting input/output files, dirs',
-        4: ' -> Requested action not supported: an attempt was made to manipulate 64-bit files on a platform that cannot support them; or an option was specified; that is supported by the client and not by the server.',
-        5: ' -> Error starting client-server protocol',
-        6: ' -> Daemon unable to append to log-file',
-        10: ' -> Error in socket I/O',
-        11: ' -> Error in file I/O',
-        12: ' -> Error in rsync protocol data stream',
-        13: ' -> Errors with program diagnostics',
-        14: ' -> Error in IPC code',
-        20: ' -> Received SIGUSR1 or SIGINT',
-        21: ' -> Some error returned by waitpid()',
-        22: ' -> Error allocating core memory buffers',
-        23: ' -> Partial transfer due to error',
-        24: ' -> Partial transfer due to vanished source files',
-        25: ' -> The --max-delete limit stopped deletions',
-        30: ' -> Timeout in data send/receive',
-        35: ' -> Timeout waiting for daemon connection',
-        255: ' -> server did not accept handshake',
-    }
-    return errors.get(code, '')
 
 
 # start listening to rabbit-mq server

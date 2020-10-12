@@ -9,6 +9,8 @@ from threading import Thread
 import pika
 import termcolor
 
+import helper
+
 # number of files handled by ffmepg in convert method
 SIMULTANEOUS_THREADS = 5
 
@@ -27,7 +29,7 @@ def start_convert(message):
     threads = []
     # get client folder
     path_studio = os.path.join(PATH_CONVERT, message['ip'])
-    print(termcolor.colored('start_convert ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_convert ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
     for set in [item.name for item in os.scandir(path_studio) if item.is_dir()]:
         if os.path.isdir(os.path.join(path_studio, set, PATH_HIGH)):
             # create output folders
@@ -64,7 +66,7 @@ def start_convert(message):
 
 
 def start_announce(message):
-    print(termcolor.colored('start_announce ... ' + get_size(PATH_ANNOUNCE), 'yellow'), flush=True)
+    print(termcolor.colored('start_announce ... ' + helper.get_size(PATH_ANNOUNCE), 'yellow'), flush=True)
     status = 0
     for set in [item.name for item in os.scandir(PATH_ANNOUNCE) if item.is_dir()]:
         if os.path.isdir(os.path.join(PATH_ANNOUNCE, set, PATH_HIGH)):
@@ -90,7 +92,7 @@ def start_announce(message):
 
 
 def start_rabiea(message):
-    print(termcolor.colored('start_rabiea ... ' + get_size(PATH_RABIEA), 'yellow'), flush=True)
+    print(termcolor.colored('start_rabiea ... ' + helper.get_size(PATH_RABIEA), 'yellow'), flush=True)
     status = 0
     for file in [item.name for item in os.scandir(PATH_RABIEA) if item.is_file()]:
         try:
@@ -122,29 +124,6 @@ def nondestructive_move(source, destination, set):
         shutil.move(source, os.path.join(destination, set))
     else:
         nondestructive_move(source, destination, set + ' new')
-
-
-# get size for better logging (except 'done' folder)
-def get_size(start_path):
-    total_size = 0
-    try:
-        for dirpath, dirnames, filenames in os.walk(start_path):
-            for f in filenames:
-                fp = os.path.join(dirpath, f)
-                # skip if it is symbolic link
-                if not os.path.islink(fp) and 'done' not in dirpath:
-                    total_size += os.path.getsize(fp)
-        if total_size < 1024:
-            size = str(round(total_size)) + ' Byte'
-        elif total_size < 1024 ^ 2:
-            size = str(round(total_size / 1024, 1)) + ' KB'
-        elif total_size < 1024 * 1024 * 1024:
-            size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
-        else:
-            size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
-        return size
-    except:
-        return 'error calculating size'
 
 
 # start processing message and route to needed function

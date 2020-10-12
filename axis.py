@@ -7,12 +7,14 @@ import time
 import pika
 import termcolor
 
+import helper
+
 
 def start_axis(message):
     status = 0
     # get client folder
     path_studio = os.path.join(PATH_AXIS, message['ip'])
-    print(termcolor.colored('start_axis ... ' + get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start_axis ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
     for file in [item.name for item in os.scandir(path_studio) if item.is_file()]:
         try:
             if file.endswith(('.mkv', '.MKV')):
@@ -33,29 +35,6 @@ def start_axis(message):
                 shutil.move(out_mp4, os.path.join(path_studio, 'done'))
         except:
             print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
-
-
-# get size for better logging (except 'done' folder)
-def get_size(start_path):
-    total_size = 0
-    try:
-        for dirpath, dirnames, filenames in os.walk(start_path):
-            for f in filenames:
-                fp = os.path.join(dirpath, f)
-                # skip if it is symbolic link
-                if not os.path.islink(fp) and 'done' not in dirpath:
-                    total_size += os.path.getsize(fp)
-        if total_size < 1024:
-            size = str(round(total_size)) + ' Byte'
-        elif total_size < 1024 ^ 2:
-            size = str(round(total_size / 1024, 1)) + ' KB'
-        elif total_size < 1024 * 1024 * 1024:
-            size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
-        else:
-            size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
-        return size
-    except:
-        return 'error calculating size'
 
 
 # start processing message and route to needed function
