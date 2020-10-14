@@ -106,6 +106,51 @@ def update():
     root.mainloop()
 
 
+class InstantMessenger(threading.Thread):
+    def __init__(self, user):
+        super(InstantMessenger, self).__init__()
+        self._is_interrupted = False
+        self.host = '192.168.4.3'
+        self.name = user['first_name'] + ' ' + user['last_name']
+        self.queue_name = str(socket.gethostbyname(socket.gethostname()))
+        self.spawn = ToastNotifier()
+
+    def stop(self):
+        self._is_interrupted = True
+
+    def toaster(self, message):
+        self.spawn.show_toast('from ' + message['ip'] + ' :',
+                              message['text'],
+                              icon_path='alaa.ico',
+                              duration=None,
+                              threaded=True)
+
+    def connect(self):
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, heartbeat=0))
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=self.queue_name)
+        self.channel.basic_qos(prefetch_count=1)
+
+    def run(self):
+        try:
+            while True:
+                threads = []
+                self.connect()
+                for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
+                    if self._is_interrupted:
+                        self.connection.close()
+                        break
+                    if not message[0]:
+                        continue
+                    method, properties, body = message
+                    self.channel.basic_ack(delivery_tag=method.delivery_tag)
+                    message = json.loads(body)
+                    threads.append(threading.Thread(target=self.toaster, args=[message], daemon=True))
+                    threads[-1].start()
+        except:
+            pass
+
+
 class Login(object):
     def __init__(self):
         self.root = tk.Tk()
@@ -236,6 +281,7 @@ class Main(object):
 
     def quit_window(self):
         self.root.destroy()
+        im.stop()
         os._exit(0)
 
     """axis section"""
@@ -565,6 +611,8 @@ if __name__ == '__main__':
         PASSWORD = os.getenv("PASSWORD_FILM")
         setup_logging()
         user = attempt_login()
+        im = InstantMessenger(user)
+        im.start()
         # run main app
         panel = Main(user)
     else:
