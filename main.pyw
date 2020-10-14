@@ -67,7 +67,7 @@ def attempt_login():
             status_code = response.status_code
             data = json.loads(response.content)
         except:
-            status_code = None
+            continue
         try:
             if str(data['data']['user']['first_name']) == "None":
                 status_code = None
@@ -75,10 +75,8 @@ def attempt_login():
             else:
                 user_id = str(data['data']['user']['id'])
         except:
-            user_id = "Unknown"
-            data['data'] = {}
-            data['data']['user'] = {'id': 00000, 'first_name': 'ناشناس', 'last_name': ''}
-        logging.critical("logged in user_id: " + user_id)
+            continue
+    logging.critical("logged in user_id: " + user_id)
     return data['data']['user']
 
 
