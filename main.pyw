@@ -119,7 +119,7 @@ class InstantMessenger(threading.Thread):
         self._is_interrupted = True
 
     def toaster(self, message):
-        self.spawn.show_toast('from ' + message['ip'] + ' :',
+        self.spawn.show_toast('from ' + message['sender'] + ' :',
                               message['text'],
                               icon_path='alaa.ico',
                               duration=None,
