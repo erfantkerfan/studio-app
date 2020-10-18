@@ -4,10 +4,10 @@ import os
 
 import subprocess
 
-# get size for better logging (except 'done' folder)
 import pika
 
 
+# get size for better logging (except 'done' folder)
 def get_size(start_path):
     total_size = 0
     try:
