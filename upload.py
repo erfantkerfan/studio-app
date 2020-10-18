@@ -136,6 +136,8 @@ def digest(ch, method, properties, body):
     else:
         print(termcolor.colored('Unknown tag context ↑↑↑', 'red', attrs=['reverse']), flush=True)
     end = time.time()
+    helper.send_message(message['ip'], message['tag'] + ' Done in ' + str(
+        time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))))
     print(
         termcolor.colored('Done in ' + str(time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))),
                           'green', attrs=['reverse']), flush=True)

@@ -1,9 +1,13 @@
+import datetime
+import json
 import os
 
 import subprocess
 
-
 # get size for better logging (except 'done' folder)
+import pika
+
+
 def get_size(start_path):
     total_size = 0
     try:
@@ -61,3 +65,23 @@ def get_rsync_error(code):
         255: ' -> server did not accept handshake',
     }
     return errors.get(code, '')
+
+
+def send_message(to, text):
+    host = '192.168.4.3'
+    message = {
+        'tag': 'text',
+        'text': text,
+        'sender': 'server',
+        'ip': host,
+        'user_id': 0,
+        'datetime': str(datetime.datetime.now())
+    }
+    queue_name = to
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+    channel = connection.channel()
+    channel.queue_declare(queue=queue_name)
+    channel.basic_publish(exchange='',
+                          routing_key=queue_name,
+                          body=json.dumps(message))
+    connection.close()
