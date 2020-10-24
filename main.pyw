@@ -219,11 +219,11 @@ class Main(object):
         self.root = tk.Tk()
         self.add_menu()
         self.init_window()
+        self.config_menu()
         self.load_landing()
         self.root.mainloop()
 
     def load_landing(self):
-        self.config_menu()
         self.welcome_text = tk.Label(self.root, text=os.linesep * 3 + 'سلام ' + user['first_name'] + ' ' + user[
             'last_name'] + ' عزیز')
         self.welcome_text.pack()
@@ -610,7 +610,8 @@ if __name__ == '__main__':
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
         PASSWORD = os.getenv("PASSWORD_FILM")
         setup_logging()
-        user = attempt_login()
+        # user = attempt_login()
+        user = {'id': 27244, 'first_name': 'عرفان', 'last_name': 'قلی زاده', 'name_slug': None, 'mobile': '09305551082', 'mobile_verified_at': '2020-09-15 15:51:04', 'national_code': '0019451210', 'photo': 'https://cdn.alaatv.com/upload/images/profile/photo_2019-12-31_21-41-25_20200530094719.jpg?w=100&h=100', 'province': 'تهران', 'city': 'تهران', 'address': 'تهران', 'postal_code': None, 'school': None, 'email': 'erfantkerfan@yahoo.com', 'bio': '<sCrIPT>prompt(":D")</SCRipT>', 'info': None, 'major': {'id': 1, 'name': 'ریاضی'}, 'grade': {'id': 10, 'name': None}, 'gender': None, 'profile_completion': 80, 'wallet_balance': 0, 'updated_at': '2020-09-15 11:24:21', 'created_at': '2018-02-11 11:37:49', 'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6IlRxcm5ESHFUQzd4dXBtK0lydWo5M0E9PSIsInZhbHVlIjoicFVIbHBEZ2FpdFRkVEpaTVBjQjRhUTRjTUpCb0Vtb2RcL1ZEeHJBSUtPNWs9IiwibWFjIjoiYTNjODQyMjExNjBmMDRkNjk3YTI5M2Y5MjkxNThlYTU1ZmM4MTAyMjMwNTg0MjQ0MTNiYzc4ZTA0ZTdjOWM1MiJ9?expires=1602936079&signature=774636e2bc1c5d892c1687c1978e4a3547271f2872fd29b551ffb12838e93cac', 'birthdate': None}
         im = InstantMessenger(user)
         im.start()
         # run main app
