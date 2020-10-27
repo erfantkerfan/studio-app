@@ -9,7 +9,7 @@ from threading import Thread
 import pika
 import termcolor
 
-import helper
+from . import helper
 
 # number of files handled by ffmepg in convert method
 SIMULTANEOUS_THREADS = 5

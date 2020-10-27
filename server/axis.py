@@ -7,7 +7,7 @@ import time
 import pika
 import termcolor
 
-import helper
+from . import helper
 
 
 def start_axis(message):
