@@ -1,0 +1,8 @@
+.idea/
+__pycache__/
+venv/
+.env
+*.mp4
+*.mkv
+*.jpg
+log.txt

@@ -636,6 +636,8 @@ if __name__ == '__main__':
             update_label.pack(pady=5)
             GIT_REMOTE = 'production'
             GIT_BRANCH = 'master'
+            command0 = 'git remote set-url production https://github.com/erfantkerfan/studio-app'
+            process0 = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
