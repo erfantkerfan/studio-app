@@ -21,7 +21,7 @@ import requests
 from dotenv import load_dotenv
 from win10toast import ToastNotifier
 
-VERSION = '1.2.1'
+VERSION = '1.2.3'
 
 
 # def parse_seconds(t):
@@ -264,7 +264,7 @@ class Main(object):
         self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
-        self.add_voice('Message', self.message_box)
+        # self.add_voice('Message', self.message_box)
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
@@ -636,9 +636,6 @@ if __name__ == '__main__':
             update_label.pack(pady=5)
             GIT_REMOTE = 'production'
             GIT_BRANCH = 'master'
-            command0 = 'git remote set-url production https://github.com/erfantkerfan/studio-app'
-            process0 = subprocess.Popen(command0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            status = process0.wait()
             command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             status = process.wait()
