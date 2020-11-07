@@ -106,6 +106,87 @@ def update():
     root.mainloop()
 
 
+class Insert(object):
+
+    def __init__(self, root):
+        root.withdraw()
+        self.window = tk.Tk()
+        self.window.protocol('WM_DELETE_WINDOW', self.quit_window)
+        self.add_menu()
+        self.init_window()
+
+        self.IPS = [
+            '192.168.0.10',
+            '192.168.0.20',
+            '192.168.0.30',
+            '192.168.0.50',
+            '192.168.0.51',
+            '192.168.0.52',
+            '192.168.0.55',
+            '192.168.0.65',
+            '192.168.0.70',
+            '192.168.5.33',
+            '192.168.5.36',
+        ]
+        self.reciever = tk.StringVar(self.window)
+        options = tk.OptionMenu(self.window, self.reciever, *self.IPS)
+        options.pack()
+
+        self.message = tk.StringVar(self.window)
+        self.message.set('')
+        self.message.trace('w', self.validate)
+        self.message_box = tk.Entry(self.window, textvariable=self.message, justify='center', width=90)
+        self.message_box.pack(pady=10)
+        self.message_box.bind('<Return>', self.send_message)
+
+        self.window.mainloop()
+
+    def validate(self, enevt, *args):
+        if len(self.message.get()) > 100:
+            self.message.set(self.message.get()[0:100])
+
+    def send_message(self, event):
+        host = '192.168.4.3'
+        sender = socket.gethostbyname(socket.gethostname())
+        message = {
+            'tag': 'text',
+            'text': self.message.get(),
+            'sender': sender,
+            'ip': sender,
+            'user_id': 0,
+            'datetime': str(datetime.datetime.now())
+        }
+        queue_name = self.reciever.get()
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        channel = connection.channel()
+        channel.queue_declare(queue=queue_name)
+        channel.basic_publish(exchange='',
+                              routing_key=queue_name,
+                              body=json.dumps(message))
+        connection.close()
+        self.quit_window()
+
+    def init_window(self):
+        self.window.geometry("600x100")
+        self.window.resizable(height=None, width=None)
+        self.window.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        self.window.title('Alaa studio app')
+
+    def add_menu(self):
+        self.menubar = tk.Menu(self.window)
+        self.add_voice("Quit", self.quit_window)
+        self.window.config(menu=self.menubar)
+
+    def add_voice(self, label, command):
+        """Add a voice to menubar"""
+        self.menubar.add_command(label=label, command=command)
+
+    def quit_window(self):
+        """called by quit menubar label voice"""
+        self.window.destroy()
+        self.window.quit()
+
+
 class InstantMessenger(threading.Thread):
     def __init__(self, user):
         super(InstantMessenger, self).__init__()
@@ -264,7 +345,7 @@ class Main(object):
         self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
-        # self.add_voice('Message', self.message_box)
+        self.add_voice('Message', self.message_box)
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
@@ -276,7 +357,8 @@ class Main(object):
         self.config_menu()
 
     def message_box(self):
-        pass
+        Insert(self.root)
+        self.root.deiconify()
 
     def add_voice(self, label, command):
         self.menubar.add_command(label=label, command=command)
