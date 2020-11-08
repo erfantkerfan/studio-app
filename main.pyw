@@ -21,7 +21,7 @@ import requests
 from dotenv import load_dotenv
 from win10toast import ToastNotifier
 
-VERSION = '1.2.3'
+VERSION = '1.3.0'
 
 
 # def parse_seconds(t):
