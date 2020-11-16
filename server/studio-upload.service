@@ -1,6 +1,6 @@
 [Unit]
 Description=studio-upload Service
-After=multi-user.target
+After=docker.service
 Conflicts=getty@tty1.service
 StartLimitBurst=1000000000
 StartLimitIntervalSec=1000000000
