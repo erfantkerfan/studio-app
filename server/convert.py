@@ -101,7 +101,7 @@ def start_rabiea(message):
                     os.makedirs(os.path.join(PATH_RABIEA, 'done'))
                 # generate input and output filename
                 in_mp4 = os.path.join(PATH_RABIEA, file)
-                out_mp4 = os.path.join(PATH_RABIEA, 'done', file)
+                out_mp4 = os.path.join(PATH_RABIEA, 'done', 'HQ-' + file)
                 # generate different command types
                 if message['tag'] == 'rabiea':
                     command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 1280x720 -profile:v baseline -level 3.0 -vcodec libx264 -crf 19 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 128k -movflags +faststart \"' + out_mp4 + '\"'
