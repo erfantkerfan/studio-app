@@ -25,18 +25,18 @@ VERSION = '1.3.0'
 
 
 def setup_logging():
-    if not os.path.exists('log.txt'):
+    if not os.path.exists('log.log'):
         with open('log.txt', 'w+') as _:
             pass
 
-    with open('log.txt', 'r+') as logfile:
+    with open('log.log', 'r+') as logfile:
         content = logfile.readlines()
         content = content[-1000:]
         logfile.seek(0)
         logfile.writelines(content)
         logfile.truncate()
 
-    logging.basicConfig(filename='log.txt',
+    logging.basicConfig(filename='log.log',
                         filemode='a',
                         format='%(asctime)s ---> %(message)s',
                         datefmt='%H:%M:%S',

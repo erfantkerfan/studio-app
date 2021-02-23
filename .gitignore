@@ -6,3 +6,4 @@ venv/
 *.mkv
 *.jpg
 log.txt
+*.log
