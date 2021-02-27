@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import os
+import platform
 import socket
 import subprocess
 import sys
@@ -14,16 +15,17 @@ import tkinter.ttk as ttk
 import webbrowser
 from functools import partial
 from tkinter import simpledialog
-import platform
 
 import paramiko
 import pika
 import requests
 from dotenv import load_dotenv
+
 if platform.system().lower().startswith('win'):
     from win10toast import ToastNotifier
 elif platform.system().lower().startswith('lin'):
     import notify2
+
     notify2.init('studio-app')
 
 VERSION = '1.5.0'
@@ -113,6 +115,7 @@ def get_ip(lookup='8.8.8.8', port=80):
         ip = s.getsockname()[0]
         s.close()
     return str(ip)
+
 
 class Insert(object):
 
@@ -219,6 +222,7 @@ class InstantMessenger(threading.Thread):
                 n.show()
         except:
             pass
+
     def connect(self):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, heartbeat=0))
         self.channel = self.connection.channel()
