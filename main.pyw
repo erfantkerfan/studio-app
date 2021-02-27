@@ -31,7 +31,7 @@ VERSION = '1.5.0'
 
 def setup_logging():
     if not os.path.exists('log.log'):
-        with open('log.txt', 'w+') as _:
+        with open('log.log', 'w+') as _:
             pass
 
     with open('log.log', 'r+') as logfile:
