@@ -14,14 +14,19 @@ import tkinter.ttk as ttk
 import webbrowser
 from functools import partial
 from tkinter import simpledialog
+import platform
 
 import paramiko
 import pika
 import requests
 from dotenv import load_dotenv
-from win10toast import ToastNotifier
+if platform.system().lower().startswith('win'):
+    from win10toast import ToastNotifier
+elif platform.system().lower().startswith('lin'):
+    import notify2
+    notify2.init('studio-app')
 
-VERSION = '1.3.0'
+VERSION = '1.5.0'
 
 
 def setup_logging():
@@ -85,7 +90,8 @@ def update():
     root = tk.Tk()
     root.geometry("250x150")
     root.resizable(height=None, width=None)
-    root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+    if platform.system().lower().startswith('win'):
+        root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
     # root.protocol('WM_DELETE_WINDOW', root.iconify)
     root.title('Alaa studio app')
     update_title = tk.Label(root, text='در حال بروزرسانی از اینترنت')
@@ -97,6 +103,16 @@ def update():
     t.start()
     root.mainloop()
 
+
+def get_ip(lookup='8.8.8.8', port=80):
+    if platform.system().lower().startswith('win'):
+        ip = str(socket.gethostbyname(socket.gethostname()))
+    else:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((lookup, port))
+        ip = s.getsockname()[0]
+        s.close()
+    return str(ip)
 
 class Insert(object):
 
@@ -137,7 +153,7 @@ class Insert(object):
 
     def send_message(self, event):
         host = '192.168.4.3'
-        sender = socket.gethostbyname(socket.gethostname())
+        sender = get_ip()
         message = {
             'tag': 'text',
             'text': self.message.get(),
@@ -150,16 +166,15 @@ class Insert(object):
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         channel = connection.channel()
         channel.queue_declare(queue=queue_name)
-        channel.basic_publish(exchange='',
-                              routing_key=queue_name,
-                              body=json.dumps(message))
+        channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(message))
         connection.close()
         self.quit_window()
 
     def init_window(self):
         self.window.geometry("600x100")
         self.window.resizable(height=None, width=None)
-        self.window.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        if platform.system().lower().startswith('win'):
+            self.window.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
         self.window.title('Alaa studio app')
 
     def add_menu(self):
@@ -183,19 +198,26 @@ class InstantMessenger(threading.Thread):
         self._is_interrupted = False
         self.host = '192.168.4.3'
         self.name = user['first_name'] + ' ' + user['last_name']
-        self.queue_name = str(socket.gethostbyname(socket.gethostname()))
-        self.spawn = ToastNotifier()
+        self.queue_name = get_ip()
+        if platform.system().lower().startswith('win'):
+            self.spawn = ToastNotifier()
+        elif platform.system().lower().startswith('lin'):
+            self.spawn = notify2.init('studip-app')
 
     def stop(self):
         self._is_interrupted = True
 
     def toaster(self, message):
-        self.spawn.show_toast('from ' + message['sender'] + ' :',
-                              message['text'],
-                              icon_path='alaa.ico',
-                              duration=None,
-                              threaded=True)
-
+        try:
+            title = 'from ' + message['sender'] + ' :'
+            body = message['text']
+            if platform.system().lower().startswith('win'):
+                self.spawn.show_toast(title, body, icon_path='alaa.ico', duration=60, threaded=True)
+            elif platform.system().lower().startswith('lin'):
+                n = notify2.Notification(title, body)
+                n.show()
+        except:
+            pass
     def connect(self):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host, heartbeat=0))
         self.channel = self.connection.channel()
@@ -246,7 +268,8 @@ class Login(object):
     def init_window(self):
         self.root.geometry("250x150")
         self.root.resizable(height=None, width=None)
-        self.root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        if platform.system().lower().startswith('win'):
+            self.root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
         self.root.title('Alaa studio app')
 
     def load_landing(self):
@@ -303,7 +326,8 @@ class Main(object):
     def init_window(self):
         self.root.geometry("400x300")
         self.root.resizable(height=None, width=None)
-        self.root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        if platform.system().lower().startswith('win'):
+            self.root.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
         self.root.title('Alaa studio app')
 
     def add_menu(self):
@@ -365,16 +389,24 @@ class Main(object):
 
     def send_convert_command(self, tag):
         password_list = ['4b9d51c427c2ec93a40c4c9b08eb1d5ac0cdc6d175e135cc03bac8ba2a5918d3']
+        priority = 0
         if tag in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
             password = simpledialog.askstring("Password", "Enter password:", show='*')
+            priority = 1
             if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
                 try:
-                    toaster = ToastNotifier()
-                    toaster.show_toast('Wrong password',
-                                       'Wrong password for ' + tag,
-                                       icon_path='alaa.ico',
-                                       duration=2,
-                                       threaded=True)
+                    title = 'Wrong password'
+                    body = 'Wrong password for ' + tag
+                    if platform.system().lower().startswith('win'):
+                        toaster = ToastNotifier()
+                        toaster.show_toast(title,
+                                           body,
+                                           icon_path='alaa.ico',
+                                           duration=2,
+                                           threaded=True)
+                    elif platform.system().lower().startswith('lin'):
+                        n = notify2.Notification(title, body)
+                        n.show()
                 except:
                     pass
                 finally:
@@ -385,7 +417,7 @@ class Main(object):
             queue_name = 'studio-axis'
         message = {
             'tag': tag,
-            'ip': str(socket.gethostbyname(socket.gethostname())),
+            'ip': get_ip(),
             'user_id': str(self.user_id),
             'datetime': str(datetime.datetime.now())
         }
@@ -395,14 +427,15 @@ class Main(object):
         channel.queue_declare(queue=queue_name)
         channel.basic_publish(exchange='',
                               routing_key=queue_name,
-                              body=json.dumps(message))
+                              body=json.dumps(message),
+                              properties=pika.BasicProperties(priority=priority))
         connection.close()
         try:
             toaster = ToastNotifier()
             toaster.show_toast('Command sent: ' + str(tag),
                                message['ip'],
                                icon_path='alaa.ico',
-                               duration=4,
+                               duration=60,
                                threaded=True)
         except:
             pass
@@ -429,7 +462,7 @@ class Main(object):
         queue_name = 'studio-upload'
         message = {
             'tag': tag,
-            'ip': str(socket.gethostbyname(socket.gethostname())),
+            'ip': get_ip(),
             'user_id': str(self.user_id),
             'datetime': str(datetime.datetime.now())
         }
@@ -446,7 +479,7 @@ class Main(object):
             toaster.show_toast('Upload sent: ' + str(tag),
                                message['ip'],
                                icon_path='alaa.ico',
-                               duration=4,
+                               duration=60,
                                threaded=True)
         except:
             pass
@@ -470,7 +503,8 @@ class Main(object):
         except:
             pass
         self.log_win = tk.Tk()
-        self.log_win.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
+        if platform.system().lower().startswith('win'):
+            self.log_win.iconbitmap(default=os.path.join(os.getcwd(), 'alaa.ico'))
         self.log_win.title('Alaa studio-app log')
 
         buttons_frame = tk.Frame(self.log_win)
