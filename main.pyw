@@ -363,7 +363,7 @@ class Main(object):
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
-        chnagelog_url = 'https://github.com/alaatv/studio-app/blob/master/CHANGELOG.md'
+        chnagelog_url = 'https://github.com/erfantkerfan/studio-app'
         self.about_menu.add_command(label='V ' + VERSION, command=partial(webbrowser.open, chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
