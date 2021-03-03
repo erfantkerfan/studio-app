@@ -316,6 +316,7 @@ class Main(object):
     def __init__(self, user):
         self.user_id = user['id']
         self.root = tk.Tk()
+        self.root.protocol('WM_DELETE_WINDOW', self.quit_window)
         self.add_menu()
         self.init_window()
         self.config_menu()
