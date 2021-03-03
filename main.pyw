@@ -28,7 +28,7 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.5.0'
+VERSION = '1.5.1'
 
 
 def setup_logging():
@@ -316,6 +316,7 @@ class Main(object):
     def __init__(self, user):
         self.user_id = user['id']
         self.root = tk.Tk()
+        self.root.protocol('WM_DELETE_WINDOW', self.quit_window)
         self.add_menu()
         self.init_window()
         self.config_menu()
