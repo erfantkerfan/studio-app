@@ -1,10 +1,11 @@
-Pillow~=7.2.0
-requests~=2.24.0
+python-dotenv~=0.15.0
+requests~=2.25.1
+pika~=1.2.0
+paramiko~=2.7.2
 win10toast~=0.9; platform_system == "Windows"
-pika~=1.1.0
-termcolor~=1.1.0
-paramiko~=2.7.1
-python-dotenv~=0.14.0
-timeloop~=1.0.2
-pyscreenshot~=2.2
 notify2~=0.3.1; platform_system == "Linux"
+
+timeloop~=1.0.2
+pyscreenshot~=2.3
+
+termcolor~=1.1.0

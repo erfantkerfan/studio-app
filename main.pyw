@@ -28,7 +28,7 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.5.1'
+VERSION = '1.5.2'
 
 
 def setup_logging():
@@ -262,7 +262,7 @@ class Login(object):
 
         self.about_menu = tk.Menu(self.menubar, tearoff=0)
         self.about_menu.add_command(label='update', command=reload)
-        chnagelog_url = 'https://github.com/alaatv/studio-app/blob/master/CHANGELOG.md'
+        chnagelog_url = 'https://github.com/erfantkerfan/studio-app'
         self.about_menu.add_command(label='V ' + VERSION, command=partial(webbrowser.open, chnagelog_url, new=1))
         self.menubar.add_cascade(label='About', menu=self.about_menu)
 
@@ -325,7 +325,7 @@ class Main(object):
 
     def load_landing(self):
         self.welcome_text = tk.Label(self.root, text=os.linesep * 3 + 'سلام ' + user['first_name'] + ' ' + user[
-            'last_name'] + ' عزیز')
+            'last_name'] + ' عزیز' + os.linesep * 3 + get_ip())
         self.welcome_text.pack()
         self.root.update()
 
@@ -581,7 +581,11 @@ if __name__ == '__main__':
             update_text.set('✔')
             update_label = tk.Label(root, textvariable=update_text, fg='green')
             update_label.pack(pady=5)
-            GIT_REMOTE = 'production'
+            GIT_REMOTE = 'origin'
+            try:
+                os.system('git remote rename production origin')
+            except:
+                pass
             GIT_BRANCH = 'master'
             command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
