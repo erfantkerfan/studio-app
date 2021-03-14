@@ -12,7 +12,7 @@ import requests
 import termcolor
 from dotenv import load_dotenv
 
-from . import helper
+import helper
 
 SIMULTANEOUS_THREADS = 20
 

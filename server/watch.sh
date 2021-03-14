@@ -1,14 +1,14 @@
-#!/bin/bash
-shopt -s extglob
+#/bin/bash
+#shopt -s extglob
 trap 'kill $(jobs -p)' EXIT
 if [ $# -eq 0 ]
 then
-	array=( axis convert upload )
-	for log in "${array[@]}"
+        array=( axis convert upload )
+        for log in "${array[@]}"
 	do
-		journalctl -f --no-pager -n 100 --output=cat -u studio-$log &
-	done
+                journalctl -f --no-pager -n 1000 --output=cat -u studio-$log &
+        done
 else
-	journalctl -f --no-pager -n 100 --output=cat -u studio-$1
+        journalctl -f --no-pager -n 1000 --output=cat -u studio-$1
 fi
 wait
