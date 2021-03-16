@@ -65,6 +65,33 @@ def start_convert(message):
             nondestructive_move(os.path.join(path_studio, set), os.path.join(path_studio, 'done'), set)
 
 
+def start_tablet(message):
+    status = 0
+    # get client folder
+    path_studio = os.path.join(PATH_TABLET, message['ip'])
+    print(termcolor.colored('start_tablet ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
+    for file in [item.name for item in os.scandir(path_studio) if item.is_file()]:
+        try:
+            if file.endswith(('.mp4', '.MP4')):
+                # generate mp4 name
+                mp4 = file.replace('mp4', 'out.mp4').replace('MP4', 'OUT.MP4')
+                in_mp4 = os.path.join(path_studio, file)
+                # generate mp4 absolute path
+                out_mp4 = os.path.join(path_studio, mp4)
+                command = PATH_FFMPEG + ' -y -i \"' + in_mp4 + '\" -metadata title="@alaa_sanatisharif" -sws_flags lanczos -s 960x720 -profile:v baseline -level 3.0 -vcodec libx264 -crf 18 -r 24 -preset veryslow -pix_fmt yuv420p -tune film -acodec libfdk_aac -ab 320k -movflags +faststart \"' + out_mp4 + '\"'
+                process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
+                status = process.wait() + status
+                # remove mkv after convert
+                os.remove(in_mp4)
+                if not os.path.exists(os.path.join(path_studio, 'done')):
+                    os.makedirs(os.path.join(path_studio, 'done'))
+                if os.path.exists(os.path.join(path_studio, 'done', mp4)):
+                    os.remove(os.path.join(path_studio, 'done', mp4))
+                shutil.move(out_mp4, os.path.join(path_studio, 'done'))
+        except:
+            print(termcolor.colored('failed', 'red', attrs=['reverse']), flush=True)
+
+
 def start_announce(message):
     print(termcolor.colored('start_announce ... ' + helper.get_size(PATH_ANNOUNCE), 'yellow'), flush=True)
     status = 0
@@ -135,6 +162,8 @@ def digest(ch, method, properties, body):
     print(termcolor.colored(message, 'cyan'), flush=True)
     if message['tag'] == 'convert':
         start_convert(message)
+    elif message['tag'] == 'tablet':
+        start_tablet(message)
     elif message['tag'] == 'announce':
         start_announce(message)
     elif message['tag'] in ['rabiea', 'rabiea-480', 'rabiea-sizeless']:
@@ -170,6 +199,7 @@ if __name__ == '__main__':
     PATH_FFMPEG = '/usr/bin/ffmpeg'
     PATH_ANNOUNCE = '/home/film/announce'
     PATH_CONVERT = '/home/film/convert'
+    PATH_TABLET = '/home/film/tablet'
     PATH_RABIEA = '/home/film/rabiea'
 
     PATH_HIGH = 'HD_720p'

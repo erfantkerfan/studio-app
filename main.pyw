@@ -343,6 +343,7 @@ class Main(object):
         self.convert_menu = tk.Menu(self.menubar, tearoff=0)
         self.convert_menu.add_command(label='axis', command=partial(self.send_convert_command, 'axis'))
         self.convert_menu.add_command(label='convert', command=partial(self.send_convert_command, 'convert'))
+        self.convert_menu.add_command(label='tablet', command=partial(self.send_convert_command, 'tablet'))
         self.convert_menu.add_command(label='announce', command=partial(self.send_convert_command, 'announce'))
         self.menubar.add_cascade(label='Studio', menu=self.convert_menu)
 
@@ -361,8 +362,8 @@ class Main(object):
         self.menubar.add_cascade(label='Upload', menu=self.upload_menu)
 
         self.log_menu = tk.Menu(self.menubar, tearoff=0)
-        self.log_menu.add_command(label='convert', command=partial(self.get_log, 'convert'))
         self.log_menu.add_command(label='axis', command=partial(self.get_log, 'axis'))
+        self.log_menu.add_command(label='convert', command=partial(self.get_log, 'convert'))
         self.log_menu.add_command(label='upload', command=partial(self.get_log, 'upload'))
         self.menubar.add_cascade(label='Log', menu=self.log_menu)
 
