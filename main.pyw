@@ -106,7 +106,7 @@ def update():
     root.mainloop()
 
 
-def get_ip(lookup='8.8.8.8', port=80):
+def get_ip(lookup='192.168.4.3', port=80):
     if platform.system().lower().startswith('win'):
         ip = str(socket.gethostbyname(socket.gethostname()))
     else:
