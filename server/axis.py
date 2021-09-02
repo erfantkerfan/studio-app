@@ -75,6 +75,6 @@ def listen():
 
 if __name__ == '__main__':
     PATH_FFMPEG = '/usr/bin/ffmpeg'
-    PATH_AXIS = '/home/film/axis'
+    PATH_AXIS = '/home/alaa/film/axis'
 
     listen()

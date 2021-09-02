@@ -189,12 +189,12 @@ def listen():
 
 if __name__ == '__main__':
     load_dotenv()
-    PATH_RSYNC = '/usr/local/bin/rsync'
-    PATH_UPLOAD = '/home/film/upload'
-    PATH_NORMAL = '/home/film/upload/normal'
-    PATH_NORMAL_FORCE = '/home/film/upload/normal_force'
-    PATH_PAID = '/home/film/upload/paid'
-    PATH_PAID_FORCE = '/home/film/upload/paid_force'
+    PATH_RSYNC = '/usr/bin/rsync'
+    PATH_UPLOAD = '/home/alaa/film/upload'
+    PATH_NORMAL = '/home/alaa/film/upload/normal'
+    PATH_NORMAL_FORCE = '/home/alaa/film/upload/normal_force'
+    PATH_PAID = '/home/alaa/film/upload/paid'
+    PATH_PAID_FORCE = '/home/alaa/film/upload/paid_force'
 
     SFTP = 'sftp@cdn.alaatv.com:'
     PASSWORD = base64.b64decode(os.getenv("PASSWORD_SFTP").encode('ascii')).decode('ascii')

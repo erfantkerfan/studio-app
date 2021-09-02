@@ -28,8 +28,8 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.5.3'
-
+VERSION = '1.6.0'
+LOG_PATH = '/var/www/studio-app/supervisor-'
 
 def setup_logging():
     if not os.path.exists('log.log'):
@@ -497,9 +497,10 @@ class Main(object):
     def get_log(self, tag):
         host = '192.168.4.3'
         command = 'journalctl --no-pager -n 20 --output=cat -u studio-' + str(tag)
+        command = 'tail -n 20 ' + LOG_PATH + str(tag)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username='film', password=PASSWORD)
+        ssh.connect(host, username='alaa', password=PASSWORD)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
 
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=0))
@@ -559,7 +560,9 @@ def reload(updated=False):
 
 
 def temp_commands():
-    os.system('git remote rename production origin')
+    os.system('ssh-keygen -R 192.168.4.3')
+    os.system('ssh-keygen -R 192.168.4.3')
+    os.system('ssh-keyscan 192.168.4.3 >> ~/.ssh/known_hosts')
 
 
 if __name__ == '__main__':
@@ -567,9 +570,19 @@ if __name__ == '__main__':
     load_dotenv()
     DEBUG = bool(os.getenv("DEBUG"))
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
-        PASSWORD = os.getenv("PASSWORD_FILM")
+        PASSWORD = os.getenv("PASSWORD_ALAA")
         setup_logging()
-        user = attempt_login()
+        # user = attempt_login()
+        user = {'id': 27244, 'first_name': 'عرفان', 'last_name': 'قلی زاده', 'name_slug': None, 'mobile': '09305551082',
+                'mobile_verified_at': '2020-09-15 15:51:04', 'national_code': '0019451210',
+                'photo': 'https://cdn.alaatv.com/upload/images/profile/photo_2019-12-31_21-41-25_20200530094719.jpg?w=100&h=100',
+                'province': 'تهران', 'city': 'تهران', 'address': 'تهران', 'postal_code': None, 'school': None,
+                'email': 'erfantkerfan@yahoo.com', 'bio': '<sCrIPT>prompt(":D")</SCRipT>', 'info': None,
+                'major': {'id': 1, 'name': 'ریاضی'}, 'grade': {'id': 10, 'name': None}, 'gender': None,
+                'profile_completion': 80, 'wallet_balance': 0, 'updated_at': '2020-09-15 11:24:21',
+                'created_at': '2018-02-11 11:37:49',
+                'edit_profile_url': 'https://alaatv.com/user/editProfile/android/eyJpdiI6IlRxcm5ESHFUQzd4dXBtK0lydWo5M0E9PSIsInZhbHVlIjoicFVIbHBEZ2FpdFRkVEpaTVBjQjRhUTRjTUpCb0Vtb2RcL1ZEeHJBSUtPNWs9IiwibWFjIjoiYTNjODQyMjExNjBmMDRkNjk3YTI5M2Y5MjkxNThlYTU1ZmM4MTAyMjMwNTg0MjQ0MTNiYzc4ZTA0ZTdjOWM1MiJ9?expires=1602936079&signature=774636e2bc1c5d892c1687c1978e4a3547271f2872fd29b551ffb12838e93cac',
+                'birthdate': None}
         im = InstantMessenger(user)
         im.start()
         # run main app

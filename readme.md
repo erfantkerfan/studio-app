@@ -4,22 +4,14 @@
 - local server for handling converting load
 - custom `ffmpeg` build for supporting `libfdk_aac` and `libx264`
 - web and sshpass installed
-- keyscan cdn.alaatv.com >> ~/.ssh/known_hosts
+- ssh-keyscan cdn.alaatv.com >> ~/.ssh/known_hosts
+- `sudo apt install supervisor`
 ---
-### Running services - XXX refers to service name `convert`,`axis`,`upload`
+### Running supervisor - XXX refers to supervisor name `convert`,`axis`,`upload`
 ```bash
-sudo vim /lib/systemd/system/studio-XXX.service
-sudo systemctl daemon-reload
-sudo systemctl enable studio-XXX.service
-sudo systemctl start studio-XXX.service
-sudo systemctl restart studio-XXX.service
-sudo systemctl status studio-XXX.service
-sudo journalctl -f --no-pager -n 1000 --output=cat -u studio-XXX
-```
----
-### monitoring services log - XXX refers to service name `convert`,`axis`,`upload`,` `(*_empty_*) for watching all
-```
-./watch XXX
+sudo vim /etc/supervisor/conf.d/studio-XXX.conf
+sudo supervisorctl reread
+sudo supervisorctl update
 ```
 ---
 ### Installation of clients

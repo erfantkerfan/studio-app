@@ -197,10 +197,10 @@ def listen():
 
 if __name__ == '__main__':
     PATH_FFMPEG = '/usr/bin/ffmpeg'
-    PATH_ANNOUNCE = '/home/film/announce'
-    PATH_CONVERT = '/home/film/convert'
-    PATH_TABLET = '/home/film/tablet'
-    PATH_RABIEA = '/home/film/rabiea'
+    PATH_ANNOUNCE = '/home/alaa/film/announce'
+    PATH_CONVERT = '/home/alaa/film/convert'
+    PATH_TABLET = '/home/alaa/film/tablet'
+    PATH_RABIEA = '/home/alaa/film/rabiea'
 
     PATH_HIGH = 'HD_720p'
     PATH_MID = 'hq'
