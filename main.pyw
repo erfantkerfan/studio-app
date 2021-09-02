@@ -28,7 +28,7 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.5.2'
+VERSION = '1.5.3'
 
 
 def setup_logging():
@@ -558,6 +558,10 @@ def reload(updated=False):
         os.execv(sys.executable, ['python ' + str(__file__)])
 
 
+def temp_commands():
+    os.system('git remote rename production origin')
+
+
 if __name__ == '__main__':
     # try to update app from github
     load_dotenv()
@@ -585,7 +589,7 @@ if __name__ == '__main__':
             update_label.pack(pady=5)
             GIT_REMOTE = 'origin'
             try:
-                os.system('git remote rename production origin')
+                temp_commands()
             except:
                 pass
             GIT_BRANCH = 'master'
