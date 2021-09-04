@@ -28,7 +28,7 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.6.1'
+VERSION = '1.6.2'
 LOG_PATH = '/var/www/studio-app/supervisor-'
 
 def setup_logging():
@@ -564,12 +564,6 @@ def temp_commands():
         os.remove(known_hosts)
     except:
         pass
-    import subprocess
-    proc = subprocess.Popen(["ssh-keyscan 192.168.4.3"], stdout=subprocess.PIPE, shell=True)
-    (out, err) = proc.communicate()
-    file = open(known_hosts)
-    file.write(str(out))
-    file.close()
 
 
 if __name__ == '__main__':
