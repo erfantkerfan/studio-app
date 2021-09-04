@@ -496,8 +496,7 @@ class Main(object):
 
     def get_log(self, tag):
         host = '192.168.4.3'
-        command = 'journalctl --no-pager -n 20 --output=cat -u studio-' + str(tag)
-        command = 'tail -n 20 ' + LOG_PATH + str(tag)
+        command = 'tail -n 20 ' + LOG_PATH + str(tag) + '.log'
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username='alaa', password=PASSWORD)
@@ -561,7 +560,10 @@ def reload(updated=False):
 
 def temp_commands():
     known_hosts = os.path.expanduser('~/.ssh/known_hosts')
-    os.remove(known_hosts)
+    try:
+        os.remove(known_hosts)
+    except:
+        pass
     import subprocess
     proc = subprocess.Popen(["ssh-keyscan 192.168.4.3"], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
@@ -596,10 +598,7 @@ if __name__ == '__main__':
             update_label = tk.Label(root, textvariable=update_text, fg='green')
             update_label.pack(pady=5)
             GIT_REMOTE = 'origin'
-            try:
-                temp_commands()
-            except:
-                pass
+            temp_commands()
             GIT_BRANCH = 'master'
             command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
