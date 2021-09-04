@@ -28,7 +28,7 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.6.0'
+VERSION = '1.6.1'
 LOG_PATH = '/var/www/studio-app/supervisor-'
 
 def setup_logging():
