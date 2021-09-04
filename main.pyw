@@ -560,9 +560,15 @@ def reload(updated=False):
 
 
 def temp_commands():
-    os.system('ssh-keygen -R 192.168.4.3')
-    os.system('ssh-keygen -R 192.168.4.3')
-    os.system('ssh-keyscan 192.168.4.3 >> ~/.ssh/known_hosts')
+    home = os.path.expandeuser('~')
+    known_hosts = os.path.join(home, '.ssh', 'known_hosts')
+    os.remove(known_hosts)
+    import subprocess
+    proc = subprocess.Popen(["ssh-keyscan 192.168.4.3"], stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    file = open(known_hosts)
+    file.write(str(out))
+    file.close()
 
 
 if __name__ == '__main__':
