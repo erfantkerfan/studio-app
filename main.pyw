@@ -560,8 +560,7 @@ def reload(updated=False):
 
 
 def temp_commands():
-    home = os.path.expandeuser('~')
-    known_hosts = os.path.join(home, '.ssh', 'known_hosts')
+    known_hosts = os.path.expanduser('~/.ssh/known_hosts')
     os.remove(known_hosts)
     import subprocess
     proc = subprocess.Popen(["ssh-keyscan 192.168.4.3"], stdout=subprocess.PIPE, shell=True)
