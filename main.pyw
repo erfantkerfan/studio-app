@@ -28,7 +28,7 @@ elif platform.system().lower().startswith('lin'):
 
     notify2.init('studio-app')
 
-VERSION = '1.6.2'
+VERSION = '1.6.3'
 LOG_PATH = '/var/www/studio-app/supervisor-'
 
 def setup_logging():
@@ -558,14 +558,6 @@ def reload(updated=False):
         os.execv(sys.executable, ['python ' + str(__file__)])
 
 
-def temp_commands():
-    known_hosts = os.path.expanduser('~/.ssh/known_hosts')
-    try:
-        os.remove(known_hosts)
-    except:
-        pass
-
-
 if __name__ == '__main__':
     # try to update app from github
     load_dotenv()
@@ -592,7 +584,6 @@ if __name__ == '__main__':
             update_label = tk.Label(root, textvariable=update_text, fg='green')
             update_label.pack(pady=5)
             GIT_REMOTE = 'origin'
-            temp_commands()
             GIT_BRANCH = 'master'
             command = 'git reset --hard ' + GIT_REMOTE + '/' + GIT_BRANCH
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
