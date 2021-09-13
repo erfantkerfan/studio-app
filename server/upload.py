@@ -199,7 +199,6 @@ if __name__ == '__main__':
     SFTP = 'sftp@cdn.alaatv.com:'
     PASSWORD = base64.b64decode(os.getenv("PASSWORD_SFTP").encode('ascii')).decode('ascii')
     # GENERATED_PASSWORD = base64.b64encode('XXX'.encode('ascii')).decode('ascii')
-    load_dotenv()
     PATH_UPSTREAM_NORMAL = '/alaa_media/cdn/media'
     PATH_UPSTREAM_PAID = '/alaa_media/cdn/paid/private'
 
