@@ -42,6 +42,7 @@ def start_upload(message, src_path, dst_path):
 
 
 def run_command(command):
+    status = None
     while status not in [0]:
         try:
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
