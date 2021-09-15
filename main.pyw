@@ -356,9 +356,7 @@ class Main(object):
 
         self.upload_menu = tk.Menu(self.menubar, tearoff=0)
         self.upload_menu.add_command(label='normal', command=partial(self.send_upload_command, 'normal'))
-        self.upload_menu.add_command(label='normal force!', command=partial(self.send_upload_command, 'normal_force'))
         self.upload_menu.add_command(label='paid', command=partial(self.send_upload_command, 'paid'))
-        self.upload_menu.add_command(label='paid force!', command=partial(self.send_upload_command, 'paid_force'))
         self.menubar.add_cascade(label='Upload', menu=self.upload_menu)
 
         self.log_menu = tk.Menu(self.menubar, tearoff=0)
@@ -451,21 +449,6 @@ class Main(object):
     """send upload section"""
 
     def send_upload_command(self, tag):
-        password_list = ['4b9d51c427c2ec93a40c4c9b08eb1d5ac0cdc6d175e135cc03bac8ba2a5918d3']
-        if tag in ['normal_force', 'paid_force']:
-            password = simpledialog.askstring("Password", "Enter password:", show='*')
-            if hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest() not in password_list:
-                try:
-                    toaster = ToastNotifier()
-                    toaster.show_toast('Wrong password',
-                                       'Wrong password for ' + tag,
-                                       icon_path='alaa.ico',
-                                       duration=2,
-                                       threaded=True)
-                except:
-                    pass
-                finally:
-                    return None
         host = '192.168.4.3'
         queue_name = 'studio-upload'
         message = {

@@ -1,4 +1,3 @@
-import base64
 import json
 import os
 import shutil
@@ -17,50 +16,9 @@ import helper
 SIMULTANEOUS_THREADS = 20
 
 
-def start_normal(message):
-    path_studio = os.path.join(PATH_NORMAL, message['ip'])
-    print(termcolor.colored('start_normal ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
-    command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
-    status = run_command(command)
-    cleanup(status, path_studio, message['user_id'], message['tag'])
-
-
-def start_normal_force(message):
-    path_studio = os.path.join(PATH_NORMAL_FORCE, message['ip'])
-    print(termcolor.colored('start_normal_force ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
-
-    print(termcolor.colored('start_webp_generation', 'green'), flush=True)
-    threads = []
-    for dirpath, dirnames, filenames in os.walk(path_studio):
-        for file in filenames:
-            fp = os.path.join(dirpath, file)
-            if os.path.islink(fp) or not fp.lower().endswith(('.jpg', '.jpeg', 'png')):
-                continue
-            while threading.activeCount() > SIMULTANEOUS_THREADS:
-                pass
-            threads = [t for t in threads if t.is_alive()]
-            threads.append(Thread(name='t: ' + str(fp), target=helper.webp, args=(fp,)))
-            threads[-1].start()
-    # stay here until all threads are finished
-    while any([t.is_alive for t in threads]):
-        threads = [t for t in threads if t.is_alive()]
-
-    command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_NORMAL
-    status = run_command(command)
-    cleanup(status, path_studio, message['user_id'], message['tag'])
-
-
-def start_paid(message):
-    path_studio = os.path.join(PATH_PAID, message['ip'])
-    print(termcolor.colored('start_paid ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
-    command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --size-only \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
-    status = run_command(command)
-    cleanup(status, path_studio, message['user_id'], message['tag'])
-
-
-def start_paid_force(message):
-    path_studio = os.path.join(PATH_PAID_FORCE, message['ip'])
-    print(termcolor.colored('start_paid_force ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
+def start_upload(message, src_path, dst_path):
+    path_studio = os.path.join(src_path, message['ip'])
+    print(termcolor.colored('start' + message['tag'] + ' ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
 
     threads = []
     for dirpath, dirnames, filenames in os.walk(path_studio):
@@ -78,14 +36,13 @@ def start_paid_force(message):
     while any([t.is_alive for t in threads]):
         threads = [t for t in threads if t.is_alive()]
 
-    command = 'sshpass -p \"' + PASSWORD + '\" rsync -avhWP --no-compress --ignore-times \"' + path_studio + os.path.sep + '\" ' + SFTP + PATH_UPSTREAM_PAID
+    command = MC_MIRROR + path_studio + os.path.sep + ' ' + dst_path
     status = run_command(command)
     cleanup(status, path_studio, message['user_id'], message['tag'])
 
 
 def run_command(command):
-    status = None
-    while status in [None, 255]:
+    while status not in [0]:
         try:
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             # wait in seconds for upload
@@ -100,7 +57,7 @@ def cleanup(status, path_studio, user_id, type):
         update_duration(path_studio, user_id)
         try:
             time.sleep(1)
-            if type in ['normal', 'normal_force']:
+            if type in ['normal']:
                 shutil.rmtree(path_studio)
                 os.mkdir(path_studio)
                 os.mkdir(os.path.join(path_studio, 'thumbnails'))
@@ -114,8 +71,7 @@ def cleanup(status, path_studio, user_id, type):
         except:
             print(termcolor.colored('File removal failed', 'red', attrs=['reverse']), flush=True)
     else:
-        print(termcolor.colored('Non-zero status code: ' + str(status) + helper.get_rsync_error(status), 'red',
-                                attrs=['reverse']), flush=True)
+        print(termcolor.colored('Non-zero status code: ' + str(status), 'red', attrs=['reverse']), flush=True)
 
 
 # start processing message and route to needed function
@@ -126,13 +82,9 @@ def digest(ch, method, properties, body):
     message = json.loads(body)
     print(termcolor.colored(str(message), 'cyan'), flush=True)
     if message['tag'] == 'normal':
-        start_normal(message)
-    elif message['tag'] == 'normal_force':
-        start_normal_force(message)
+        start_upload(message, PATH_NORMAL, PATH_UPSTREAM_NORMAL)
     elif message['tag'] == 'paid':
-        start_paid(message)
-    elif message['tag'] == 'paid_force':
-        start_paid_force(message)
+        start_upload(message, PATH_PAID, PATH_UPSTREAM_PAID)
     else:
         print(termcolor.colored('Unknown tag context ↑↑↑', 'red', attrs=['reverse']), flush=True)
     end = time.time()
@@ -189,18 +141,12 @@ def listen():
 
 if __name__ == '__main__':
     load_dotenv()
-    PATH_RSYNC = '/usr/bin/rsync'
     PATH_UPLOAD = '/home/alaa/film/upload'
-    PATH_NORMAL = '/home/alaa/film/upload/normal'
-    PATH_NORMAL_FORCE = '/home/alaa/film/upload/normal_force'
-    PATH_PAID = '/home/alaa/film/upload/paid'
-    PATH_PAID_FORCE = '/home/alaa/film/upload/paid_force'
-
-    SFTP = 'sftp@cdn.alaatv.com:'
-    PASSWORD = base64.b64decode(os.getenv("PASSWORD_SFTP").encode('ascii')).decode('ascii')
-    # GENERATED_PASSWORD = base64.b64encode('XXX'.encode('ascii')).decode('ascii')
-    PATH_UPSTREAM_NORMAL = '/alaa_media/cdn/media'
-    PATH_UPSTREAM_PAID = '/alaa_media/cdn/paid/private'
+    PATH_NORMAL = PATH_UPLOAD + '/normal'
+    PATH_PAID = PATH_UPLOAD + '/paid'
+    PATH_UPSTREAM_NORMAL = 'myminio/media/'
+    PATH_UPSTREAM_PAID = 'myminio/paid/'
+    MC_MIRROR = 'mc mirror --quiet --preserve --region iran-tehran-homa '
 
     HEADERS = {
         'Accept': 'application/json',
