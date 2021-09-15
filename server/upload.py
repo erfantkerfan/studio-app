@@ -18,7 +18,7 @@ SIMULTANEOUS_THREADS = 20
 
 def start_upload(message, src_path, dst_path):
     path_studio = os.path.join(src_path, message['ip'])
-    print(termcolor.colored('start' + message['tag'] + ' ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
+    print(termcolor.colored('start ' + message['tag'] + ' ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
 
     threads = []
     for dirpath, dirnames, filenames in os.walk(path_studio):
