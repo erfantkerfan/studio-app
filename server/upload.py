@@ -45,7 +45,7 @@ def start_upload(message, src_path, dst_path):
 def run_command(command):
     status = None
     retries = 0
-    while status not in [0] or retries <= NUMBER_OF_RETRIES:
+    while status not in [0] and retries < NUMBER_OF_RETRIES:
         try:
             retries += 1
             print(termcolor.colored('started uploading. retry ' + str(retries), 'yellow'), flush=True)
@@ -54,7 +54,8 @@ def run_command(command):
                 # wait in seconds for upload
                 status = process.wait(timeout=20 * 60)
         except:
-            print(termcolor.colored('retry ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
+            pass
+        print(termcolor.colored('retry ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
     return status
 
 
