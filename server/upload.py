@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 import helper
 
 SIMULTANEOUS_THREADS = 20
+NUMBER_OF_RETRIES = 3
 
 
 def start_upload(message, src_path, dst_path):
@@ -43,14 +44,16 @@ def start_upload(message, src_path, dst_path):
 
 def run_command(command):
     status = None
-    while status not in [0]:
+    retries = 0
+    while status not in [0] or retries <= NUMBER_OF_RETRIES:
         try:
             print(termcolor.colored('started uploading process', 'yellow'), flush=True)
+            retries += 1
             process = subprocess.Popen(command, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, shell=True)
             # wait in seconds for upload
             status = process.wait(timeout=20 * 60)
         except:
-            print(termcolor.colored('second try', 'red', attrs=['reverse']), flush=True)
+            print(termcolor.colored('retry number ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
     return status
 
 
