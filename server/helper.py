@@ -20,10 +20,10 @@ def get_size(start_path):
             size = str(round(total_size)) + ' Byte'
         elif total_size < 1024 ^ 2:
             size = str(round(total_size / 1024, 1)) + ' KB'
-        elif total_size < 1024 * 1024 * 1024:
-            size = str(round(total_size / (1024 * 1024), 1)) + ' MB'
+        elif total_size < 1024 ^ 3:
+            size = str(round(total_size / (1024 ^ 2), 1)) + ' MB'
         else:
-            size = str(round(total_size / (1024 * 1024 * 1024), 1)) + ' GB'
+            size = str(round(total_size / (1024 ^ 3), 1)) + ' GB'
         return size
     except:
         return 'error calculating size'
