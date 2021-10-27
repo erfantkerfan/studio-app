@@ -55,7 +55,8 @@ def run_command(command):
                 status = process.wait(timeout=20 * 60)
         except:
             pass
-        print(termcolor.colored('retry ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
+        if status != 0:
+            print(termcolor.colored('retry ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
     return status
 
 
