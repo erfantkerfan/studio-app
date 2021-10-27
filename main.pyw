@@ -548,7 +548,8 @@ if __name__ == '__main__':
     if DEBUG or (len(sys.argv) > 1 and sys.argv[1] == 'updated'):
         PASSWORD = os.getenv("PASSWORD_ALAA")
         setup_logging()
-        user = attempt_login()
+        # user = attempt_login()
+        from erfan import user
         im = InstantMessenger(user)
         im.start()
         # run main app
