@@ -45,6 +45,7 @@ def run_command(command):
     status = None
     while status not in [0]:
         try:
+            print(termcolor.colored('started uploading process', 'yellow'), flush=True)
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
             # wait in seconds for upload
             status = process.wait(timeout=20 * 60)
