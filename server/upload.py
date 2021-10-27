@@ -47,13 +47,14 @@ def run_command(command):
     retries = 0
     while status not in [0] or retries <= NUMBER_OF_RETRIES:
         try:
-            print(termcolor.colored('started uploading process', 'yellow'), flush=True)
             retries += 1
-            process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True)
-            # wait in seconds for upload
-            status = process.wait(timeout=20 * 60)
+            print(termcolor.colored('started uploading. retry ' + str(retries), 'yellow'), flush=True)
+            with open('command.log', "w") as outfile:
+                process = subprocess.Popen(command, stdout=outfile, stderr=subprocess.STDOUT, shell=True)
+                # wait in seconds for upload
+                status = process.wait(timeout=20 * 60)
         except:
-            print(termcolor.colored('retry number ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
+            print(termcolor.colored('retry ' + str(retries) + ' failed', 'red', attrs=['reverse']), flush=True)
     return status
 
 
