@@ -22,6 +22,7 @@ def start_upload(message, src_path, dst_path):
     print(termcolor.colored('start ' + message['tag'] + ' ... ' + helper.get_size(path_studio), 'yellow'), flush=True)
 
     threads = []
+    print(termcolor.colored('start_webp_generation', 'green'), flush=True)
     for dirpath, dirnames, filenames in os.walk(path_studio):
         for file in filenames:
             fp = os.path.join(dirpath, file)
@@ -29,7 +30,6 @@ def start_upload(message, src_path, dst_path):
                 continue
             while threading.activeCount() > SIMULTANEOUS_THREADS:
                 pass
-            print(termcolor.colored('start_webp_generation', 'green'), flush=True)
             threads = [t for t in threads if t.is_alive()]
             threads.append(Thread(name='t: ' + str(fp), target=helper.webp, args=(fp,)))
             threads[-1].start()
