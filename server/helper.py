@@ -5,6 +5,8 @@ import subprocess
 
 import pika
 
+UPLOAD_SIZE_WARNING_GIGS = 10
+
 
 # get size for better logging (except 'done' folder)
 def get_size(start_path):
@@ -23,7 +25,11 @@ def get_size(start_path):
         elif total_size < 1024 ^ 3:
             size = str(round(total_size / (1024 ^ 2), 1)) + ' MB'
         else:
-            size = str(round(total_size / (1024 ^ 3), 1)) + ' GB'
+            size_in_gig = round(total_size / (1024 ^ 3), 1)
+            size = str(size_in_gig) + ' GB'
+            if size_in_gig >= UPLOAD_SIZE_WARNING_GIGS:
+                size += ' 🚨 🚨 🚨'
+
         return size
     except:
         return 'error calculating size'
