@@ -88,6 +88,10 @@ def digest(ch, method, properties, body):
         start_upload(message, PATH_NORMAL, PATH_UPSTREAM_NORMAL)
     elif message['tag'] == 'paid':
         start_upload(message, PATH_PAID, PATH_UPSTREAM_PAID)
+    elif message['tag'] == 'pamphlet':
+        start_upload(message, PATH_PAMPHLET, PATH_UPSTREAM_PAMPHLET)
+    elif message['tag'] == 'introVideo':
+        start_upload(message, PATH_INTRO_VIDEO, PATH_UPSTREAM_INTRO_VIDEO)
     else:
         print(termcolor.colored('Unknown tag context ↑↑↑', 'red', attrs=['reverse']), flush=True)
     end = time.time()
@@ -147,8 +151,12 @@ if __name__ == '__main__':
     PATH_UPLOAD = '/home/alaa/film/upload'
     PATH_NORMAL = PATH_UPLOAD + '/normal'
     PATH_PAID = PATH_UPLOAD + '/paid'
+    PATH_PAMPHLET = PATH_UPLOAD + '/pamphlet'
+    PATH_INTRO_VIDEO = PATH_UPLOAD + '/introVideo'
     PATH_UPSTREAM_NORMAL = 'myminio/media/'
     PATH_UPSTREAM_PAID = 'myminio/paid/'
+    PATH_UPSTREAM_PAMPHLET = 'myminio/media/c/pamphlet'
+    PATH_UPSTREAM_INTRO_VIDEO = 'myminio/upload/introVideos'
     MC_MIRROR = 'mc mirror --quiet --preserve --region iran-tehran-homa '
 
     HEADERS = {

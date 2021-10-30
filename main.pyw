@@ -357,6 +357,8 @@ class Main(object):
         self.upload_menu = tk.Menu(self.menubar, tearoff=0)
         self.upload_menu.add_command(label='normal', command=partial(self.send_upload_command, 'normal'))
         self.upload_menu.add_command(label='paid', command=partial(self.send_upload_command, 'paid'))
+        self.upload_menu.add_command(label='pamphlet', command=partial(self.send_upload_command, 'pamphlet'))
+        self.upload_menu.add_command(label='introVideo', command=partial(self.send_upload_command, 'introVideo'))
         self.menubar.add_cascade(label='Upload', menu=self.upload_menu)
 
         self.log_menu = tk.Menu(self.menubar, tearoff=0)
