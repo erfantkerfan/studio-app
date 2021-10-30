@@ -65,17 +65,12 @@ def cleanup(status, path_studio, user_id, type):
         update_duration(path_studio, user_id)
         try:
             time.sleep(1)
-            if type in ['normal']:
-                shutil.rmtree(path_studio)
-                os.mkdir(path_studio)
-                os.mkdir(os.path.join(path_studio, 'thumbnails'))
-            else:
-                for path, subdirs, files in os.walk(path_studio):
-                    for name in files:
-                        try:
-                            os.remove(os.path.join(path, name))
-                        except:
-                            pass
+            for path, subdirs, files in os.walk(path_studio):
+                for name in files:
+                    try:
+                        os.remove(os.path.join(path, name))
+                    except:
+                        pass
         except:
             print(termcolor.colored('File removal failed', 'red', attrs=['reverse']), flush=True)
     else:
