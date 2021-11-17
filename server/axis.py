@@ -40,7 +40,7 @@ def start_axis(message):
 # start processing message and route to needed function
 # plus timing the call for better logging
 def digest(ch, method, properties, body):
-    start = time.time()
+    start = time.perf_counter()
     ch.basic_ack(delivery_tag=method.delivery_tag)
     message = json.loads(body)
     print(termcolor.colored(message, 'cyan'), flush=True)
@@ -48,7 +48,7 @@ def digest(ch, method, properties, body):
         start_axis(message)
     else:
         print('Unknown tag context ... ->' + str(message), flush=True)
-    end = time.time()
+    end = time.perf_counter()
     helper.send_message(message['ip'], message['tag'] + ' Done in ' + str(
         time.strftime('%H:%M:%S', time.gmtime(round(end - start, 1)))))
     print(
