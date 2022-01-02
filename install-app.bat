@@ -1,13 +1,8 @@
 @ECHO OFF
 
 color 3f
-ECHO.
-ECHO.
-ECHO ============== CLONING ==============
-git clone https://github.com/erfantkerfan/studio-app.git && cd studio-app
-ECHO.
-ECHO.
-ECHO ============== INITIALIZING ==============
+
+ECHO ============== INSTALLING ==============
 pip install -r requirements.txt
 copy .env.example .env
 ECHO.
