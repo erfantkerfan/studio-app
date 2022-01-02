@@ -2,6 +2,7 @@ version: "3.4"
 services:
   rabbitmq:
     hostname: 'staging-rabbitmq'
+    restart: 'unless-stopped'
     container_name: 'staging-rabbitmq'
     image: 'rabbitmq:3.9.11-management-alpine'
     ports:
