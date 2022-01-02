@@ -1,16 +1,14 @@
-version: '2'
-
+version: "3.4"
 services:
   rabbitmq:
-    image: 'rabbitmq:3-management'
+    hostname: 'staging-rabbitmq'
+    container_name: 'staging-rabbitmq'
+    image: 'rabbitmq:3.9.11-management-alpine'
     ports:
-      - '4369:4369'
       - '5672:5672'
-      - '25672:25672'
       - '15672:15672'
     volumes:
-      - 'rabbitmq_data:/var/lib/rabbitmq/'
-      - 'rabbitmq_data:/bitnami'
+      - './rabbitmq_data:/var/lib/rabbitmq/mnesia/'
 volumes:
   rabbitmq_data:
     driver: local
